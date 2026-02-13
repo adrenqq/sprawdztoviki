@@ -220,17 +220,6 @@
       touch-action: manipulation;
     }
 
-    #result{
-      margin-top: 10px;
-      font-size: clamp(15px, 4vw, 18px);
-      font-weight: 900;
-      min-height: 26px;
-      position:relative;
-      z-index:1;
-      color: rgba(20,10,18,.86);
-      text-shadow: 0 10px 24px rgba(0,0,0,.10);
-    }
-
     /* overlay */
     .overlay{
       position:absolute;
@@ -319,8 +308,6 @@
       <button id="yes">TAK 💖</button>
     </div>
 
-    <div id="result"></div>
-
     <div class="overlay" id="overlay">
       <div class="panel">
         <h2 id="overlayTitle">💘</h2>
@@ -335,20 +322,18 @@
 
   <button id="no">NIE 😈</button>
 
-  <!-- muzyka w tle -->
+  <!-- muzyka -->
   <audio id="bgm" preload="auto" loop playsinline>
     <source src="MORAD%20-%20LAMINE.mp3" type="audio/mpeg">
   </audio>
   <button id="musicBtn" aria-label="Muzyka">🔊 Muzyka</button>
 
   <script>
-    // ========= SETTINGS =========
     const MY_PHONE_E164 = "+48690980775";
-    const KEY = "valentine_answer_v12";
+    const KEY = "valentine_answer_v13";
     const needed = 10;
     const AUDIO_SRC = "MORAD%20-%20LAMINE.mp3";
 
-    // Teksty po kliknięciach (1..10). Ostatnie kilka: “od siebie” głupie.
     const NO_LINES = [
       "na pewno?",
       "Może jednak?",
@@ -356,10 +341,10 @@
       "Ej…..",
       "poważnie?",
       "kocham cię.",
-      "Dobra, mam plan: Ty mówisz TAK, ja udaję, że to było Twoje 😂",
-      "To ja już zamawiam pizzę… nie zmuszaj mnie do odwołania 😭",
-      "Ostatnia prośba: chociaż uśmiech? 🥺",
-      "No dobra, wygrałaś… ale ja i tak jestem uroczy 😈"
+      "OK, negocjacje: Ty TAK, ja deser. Deal? 🍰",
+      "Zgubiłem argumenty… zostało mi tylko: *pls* 😭",
+      "Ostatnie 3% baterii i 97% uczuć 🥺",
+      "Dobra, to już nie NIE, to po prostu ‘BOJĘ SIĘ SZCZĘŚCIA’ 😈"
     ];
 
     const $ = (id) => document.getElementById(id);
@@ -372,7 +357,7 @@
     }
     function nowStamp(){ return new Date().toLocaleString("pl-PL"); }
 
-    // ========= AUDIO pop =========
+    // pop
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
     function ensureAudio(){
@@ -402,7 +387,7 @@
       });
     }
 
-    // ========= MUSIC =========
+    // music
     const bgm = $("bgm");
     const musicBtn = $("musicBtn");
     let musicOn = false;
@@ -433,16 +418,12 @@
       musicOn = false;
       musicBtn.textContent = "🔊 Muzyka";
     }
-    musicBtn.addEventListener("click", () => {
-      if(musicOn) stopMusic();
-      else startMusic();
-    });
+    musicBtn.addEventListener("click", () => { musicOn ? stopMusic() : startMusic(); });
     setTimeout(() => startMusic(), 300);
 
-    // ========= HEARTS =========
+    // hearts
     const heartsBox = $("hearts");
     const heartChars = ["💗","💖","💘","💕","💞","❤️‍🔥","💝"];
-
     function spawnHeart(){
       const s = document.createElement("span");
       s.textContent = heartChars[Math.floor(Math.random()*heartChars.length)];
@@ -450,33 +431,29 @@
       const size = 14 + Math.random()*20;
       const dur = 6 + Math.random()*7;
       const delay = Math.random()*2;
-
       s.style.left = left + "vw";
       s.style.fontSize = size + "px";
       s.style.animationDuration = dur + "s";
       s.style.animationDelay = delay + "s";
       heartsBox.appendChild(s);
-
       setTimeout(() => s.remove(), (dur + delay) * 1000 + 250);
     }
     for(let i=0;i<18;i++) spawnHeart();
     setInterval(spawnHeart, 420);
 
-    // ========= ELEMENTS =========
+    // elements
     const name = getNameFromUrl();
-    const title = $("title");
+    $("title").textContent = `💘 Czy zostaniesz moją Walentynką ${name}? 💘`;
+
     const yes = $("yes");
-    const no  = $("no");
-    const result = $("result");
+    const no = $("no");
     const overlay = $("overlay");
     const overlayTitle = $("overlayTitle");
     const overlayText = $("overlayText");
     const sendAgain = $("sendAgain");
     const closeOverlay = $("closeOverlay");
 
-    title.textContent = `💘 Czy zostaniesz moją Walentynką ${name}? 💘`;
-
-    // ========= STORAGE =========
+    // storage
     function setLocalAnswer(ans){
       localStorage.setItem(KEY, JSON.stringify({ answer: ans, time: new Date().toISOString(), name }));
     }
@@ -484,7 +461,7 @@
       try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; }
     }
 
-    // ========= SMS / iMessage =========
+    // sms
     function isIOS(){
       return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     }
@@ -496,7 +473,7 @@
       setTimeout(() => { window.location.href = url; }, 60);
     }
 
-    // ========= NO movement (ucieka dopiero po kliknięciu) =========
+    // NO movement
     let noClicks = 0;
 
     function intersects(ax, ay, aw, ah, bx, by, bw, bh){
@@ -513,7 +490,6 @@
         bottom: window.innerHeight - padBot - safe
       };
     }
-
     function moveNoAvoidYes(){
       const bounds = getSafeBounds();
       const btn = no.getBoundingClientRect();
@@ -537,61 +513,54 @@
         )
       );
 
-      // WAŻNE: ustawiamy i left i top — wtedy naprawdę “ucieka”
       no.style.left = x + "px";
       no.style.top  = y + "px";
       no.style.transform = "translate(0,0)";
     }
 
     function setNoLabel(step){
-      // step = ile kliknięć wykonano (1..needed)
-      const left = needed - step;
+      const left = needed - step;          // ile zostało
       const phrase = NO_LINES[step-1] || "serio?";
       no.textContent = `${phrase} 😈 (${left})`;
     }
 
-    // start: ustaw losowo miejsce, bez licznika
+    // start
     no.textContent = "NIE 😈";
     moveNoAvoidYes();
 
-    // ZAMIANA: używamy pointerdown (pewniej niż click na mobile)
-    no.addEventListener("pointerdown", async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+    // Anti-double-fire (touch/click/pointer mogą się dublować)
+    let lastFire = 0;
+    function fireOnce(fn){
+      const now = Date.now();
+      if(now - lastFire < 250) return;
+      lastFire = now;
+      fn();
+    }
 
-      ensureAudio();
-      popUpUp();
-      if(!musicOn) { try { await startMusic(); } catch(_){} }
+    function handleNo(){
+      fireOnce(async () => {
+        ensureAudio(); popUpUp();
+        if(!musicOn) { try { await startMusic(); } catch(_){} }
 
-      noClicks++;
+        noClicks++;
 
-      if(noClicks < needed){
-        setNoLabel(noClicks);   // pokaż nowy tekst + licznik ile zostało
-        moveNoAvoidYes();       // ucieka dopiero po kliknięciu
-        result.textContent = "";
-      } else {
-        const ans = "NIE 😈";
-        setLocalAnswer(ans);
-        no.style.display = "none";
-        openMessageApp(ans);
-        showOverlay(ans);
-      }
-    }, { passive:false });
+        if(noClicks < needed){
+          setNoLabel(noClicks);
+          moveNoAvoidYes(); // ucieka dopiero po “kliknięciu”
+        } else {
+          const ans = "NIE 😈";
+          setLocalAnswer(ans);
+          no.style.display = "none";
+          openMessageApp(ans);
+          showOverlay(ans);
+        }
+      });
+    }
 
-    // ========= YES =========
-    yes.addEventListener("pointerdown", async (e) => {
-      e.preventDefault();
-
-      ensureAudio();
-      popUpUp();
-      if(!musicOn) { try { await startMusic(); } catch(_){} }
-
-      const ans = "TAK 💖";
-      setLocalAnswer(ans);
-      result.textContent = "YAY! 💘 Widzimy się na Walentynki 😄";
-      openMessageApp(ans);
-      showOverlay(ans);
-    }, { passive:false });
+    // Podpinamy pod kilka eventów, żeby na pewno działało wszędzie
+    no.addEventListener("pointerdown", (e)=>{ e.preventDefault(); e.stopPropagation(); handleNo(); }, {passive:false});
+    no.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); handleNo(); }, {passive:false});
+    no.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); handleNo(); });
 
     function showOverlay(ans){
       overlayTitle.textContent = ans === "TAK 💖" ? "YAY! 💘" : "Okej 😈";
@@ -601,16 +570,27 @@
       overlay.classList.add("on");
     }
 
-    sendAgain.addEventListener("pointerdown", async (e) => {
-      e.preventDefault();
-      ensureAudio();
-      popUpUp();
-      if(!musicOn) { try { await startMusic(); } catch(_){} }
+    function handleYes(){
+      fireOnce(async () => {
+        ensureAudio(); popUpUp();
+        if(!musicOn) { try { await startMusic(); } catch(_){} }
 
+        const ans = "TAK 💖";
+        setLocalAnswer(ans);
+        openMessageApp(ans);
+        showOverlay(ans);
+      });
+    }
+
+    yes.addEventListener("pointerdown", (e)=>{ e.preventDefault(); handleYes(); }, {passive:false});
+    yes.addEventListener("click", (e)=>{ e.preventDefault(); handleYes(); });
+
+    sendAgain.addEventListener("click", async () => {
+      ensureAudio(); popUpUp();
+      if(!musicOn) { try { await startMusic(); } catch(_){} }
       const saved = getLocalAnswer();
       openMessageApp(saved?.answer || "TAK 💖");
-    }, { passive:false });
-
+    });
     closeOverlay.addEventListener("click", () => overlay.classList.remove("on"));
 
     window.addEventListener("orientationchange", () => setTimeout(moveNoAvoidYes, 250));
