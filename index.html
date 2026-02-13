@@ -148,6 +148,8 @@
       cursor: pointer;
       position: relative;
       transform-style: preserve-3d;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .photo:nth-child(2){ animation-duration: 7.1s; animation-delay: .25s; }
     .photo:nth-child(3){ animation-duration: 7.7s; animation-delay: .5s; }
@@ -161,6 +163,8 @@
       transform: scale(1.01);
       transition: transform .35s ease, filter .35s ease;
       backface-visibility: hidden;
+      user-select:none;
+      -webkit-user-drag:none;
     }
 
     @keyframes drift{
@@ -592,13 +596,31 @@
       });
     }
 
-    // klik w dowolne zdjęcie uruchamia sekwencję 4->3->2->1
-    document.getElementById("photos").addEventListener("click", (e) => {
-      const tile = e.target.closest(".photo");
-      if(!tile) return;
-      e.preventDefault();
-      handlePhotoClick();
-    }, {passive:false});
+    // --- iPhone/Safari: bind events directly to tiles (pointerdown + touchstart + click) ---
+    function bindPhotoHandlers(){
+      const tiles = document.querySelectorAll(".photo");
+      tiles.forEach(tile => {
+        tile.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handlePhotoClick();
+        }, {passive:false});
+
+        tile.addEventListener("touchstart", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handlePhotoClick();
+        }, {passive:false});
+
+        tile.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handlePhotoClick();
+        }, {passive:false});
+      });
+    }
+
+    bindPhotoHandlers();
   </script>
 </body>
 </html>
