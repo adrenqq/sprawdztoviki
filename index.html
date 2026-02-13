@@ -99,6 +99,8 @@
     animation: floaty 6s ease-in-out infinite;
     transform: translateZ(0);
     will-change: transform;
+    /* daje ramkę/”podkład”, żeby contain wyglądał ładnie */
+    background: rgba(255,255,255,.12);
   }
   .photo:nth-child(2){ animation-delay:.7s; animation-duration: 7s; }
   .photo:nth-child(3){ animation-delay:1.4s; animation-duration: 7.6s; }
@@ -111,12 +113,17 @@
 
   .photo img{
     width:100%;
+    height:auto;
     aspect-ratio:4/3;
-    object-fit:cover;
     display:block;
     user-select:none;
     -webkit-user-drag:none;
-    transform: scale(1.01);
+
+    /* ✅ CAŁE ZDJĘCIA WIDOCZNE */
+    object-fit: contain;
+    background: rgba(255,255,255,.08);
+
+    /* płynna zmiana */
     opacity:1;
     transition: opacity 220ms ease, transform 220ms ease;
     will-change: opacity, transform;
@@ -124,7 +131,7 @@
 
   .photo.swap img{
     opacity:0;
-    transform: scale(1.03);
+    transform: scale(1.02);
   }
 
   /* BUTTONS */
@@ -202,7 +209,7 @@
     100% { transform: translate(-50%, -70px) scale(1.25) rotate(16deg); opacity:0; }
   }
 
-  /* ===== SUCCESS OVERLAY (full screen photo + fireworks + big hearts) ===== */
+  /* ===== SUCCESS OVERLAY ===== */
   #successOverlay{
     position:fixed;
     inset:0;
@@ -217,13 +224,18 @@
     inset:0;
     width:100%;
     height:100%;
-    object-fit:cover;
+    object-fit:cover; /* pełny ekran */
     opacity:0;
     animation: fadeIn 420ms ease-out forwards;
     transform: scale(1.01);
   }
-  @keyframes fadeIn{
-    to{ opacity:1; }
+  @keyframes fadeIn{ to{ opacity:1; } }
+
+  /* delikatne przyciemnienie żeby napisy i serca były czytelne */
+  #successShade{
+    position:absolute; inset:0;
+    background: radial-gradient(800px 500px at 50% 35%, rgba(0,0,0,.10), rgba(0,0,0,.28));
+    pointer-events:none;
   }
 
   #fw{
@@ -253,6 +265,31 @@
     15%{ opacity:1; }
     100%{ transform: translateY(-125vh) scale(1.15) rotate(12deg); opacity:0; }
   }
+
+  /* napis na środku */
+  #loveText{
+    position:absolute;
+    left:50%;
+    top:52%;
+    transform: translate(-50%,-50%);
+    z-index: 1000002;
+    padding: 12px 18px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.22);
+    backdrop-filter: blur(10px);
+    color: rgba(255,255,255,.96);
+    font-weight: 900;
+    font-size: clamp(20px, 5vw, 34px);
+    letter-spacing: .2px;
+    text-shadow: 0 14px 28px rgba(0,0,0,.35);
+    opacity:0;
+    animation: loveIn 520ms ease-out forwards;
+  }
+  @keyframes loveIn{
+    0%{ opacity:0; transform: translate(-50%,-50%) scale(.92); }
+    100%{ opacity:1; transform: translate(-50%,-50%) scale(1); }
+  }
 </style>
 </head>
 
@@ -263,7 +300,6 @@
     <h1 id="title">💘 Czy zostaniesz moją Walentynką Wiktoria? 💘</h1>
     <p class="sub">Obiecuję: uśmiech, coś pysznego i dużo czułości (w pakiecie) 🥰</p>
 
-    <!-- XXXXX: tutaj wpisz swoją wiadomość -->
     <div class="note">XXXXX</div>
 
     <div class="photos">
@@ -289,22 +325,19 @@
 
   <!-- SUCCESS OVERLAY -->
   <div id="successOverlay">
-    <img id="successImg" src="images/5_2.jpg" alt="success">
+    <!-- ✅ poprawiona nazwa pliku (Twoja): -->
+    <img id="successImg" src="images/5_2.jpg.JPEG" alt="success">
+    <div id="successShade"></div>
     <canvas id="fw"></canvas>
     <div class="bigHearts" id="bigHearts"></div>
+    <div id="loveText">kocham cię ❤️</div>
   </div>
 
 <script>
-  // ====== settings ======
   const MY_PHONE_E164 = "+48690980775";
-
-  // "NIE" = 10 kliknięć
   const NO_TOTAL = 10;
-
-  // "TAK" = 7 kliknięć
   const YES_TOTAL = 7;
 
-  // SMS texts
   const YES_SMS_TEXT = "TAK❤️czekam na ciebie jutro wieczorem 🥰";
   const NO_SMS_TEXT  = "nie, jednak nie przyjeżdżaj…. ale dziękuję, to było naprawdę słodkie poprawiło mi trochę humor. Też cię kocham 🫶🏽";
 
@@ -323,7 +356,6 @@
 
   const $ = (id) => document.getElementById(id);
 
-  // ====== name param ======
   function getNameFromUrl(){
     const p = new URLSearchParams(location.search);
     const raw = (p.get("name") || "").trim();
@@ -332,7 +364,7 @@
   }
   $("title").textContent = `💘 Czy zostaniesz moją Walentynką ${getNameFromUrl()}? 💘`;
 
-  // ====== sparkles ======
+  // sparkles
   function sparkleAt(x, y){
     const chars = ["✨","💖","💘","🌟","💞"];
     const s = document.createElement("div");
@@ -345,7 +377,7 @@
     setTimeout(()=>s.remove(), 700);
   }
 
-  // ====== tiny pop sound ======
+  // pop sound
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   let audioCtx = null;
   function ensureAudio(){
@@ -371,7 +403,7 @@
     o.stop(ctx.currentTime + 0.09);
   }
 
-  // ====== music ======
+  // music
   const bgm = $("bgm");
   const musicBtn = $("musicBtn");
   let musicOn = false;
@@ -394,13 +426,13 @@
     musicBtn.textContent = "🔊 Muzyka";
   }
   musicBtn.addEventListener("click", () => musicOn ? stopMusic() : startMusic());
-  setTimeout(()=>startMusic(), 250); // try autoplay
+  setTimeout(()=>startMusic(), 250);
 
   function ensureMusicFromInteraction(){
     if(!musicOn) startMusic().catch(()=>{});
   }
 
-  // ====== hearts background ======
+  // background hearts
   const heartsBox = $("hearts");
   const heartChars = ["💗","💖","💘","💕","💞","❤️‍🔥","💝"];
   function spawnHeart(){
@@ -420,7 +452,7 @@
   for(let i=0;i<18;i++) spawnHeart();
   setInterval(spawnHeart, 420);
 
-  // ====== sms (best effort) ======
+  // sms (best effort)
   function isIOS(){
     return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   }
@@ -430,7 +462,7 @@
     location.href = `sms:${MY_PHONE_E164}${sep}body=${body}`;
   }
 
-  // ====== photo swap config (Twoje nazwy) ======
+  // photo swap config (Twoje nazwy)
   const photoSets = {
     1: ["images/1.jpg.JPEG", "images/1_2.jpeg.JPEG", "images/1_3.jpg.JPEG"],
     2: ["images/2.jpg.JPEG", "images/2_2.jpg.JPEG", "images/2_3.jpg.JPEG"],
@@ -438,8 +470,6 @@
     4: ["images/4.jpg.JPEG", "images/4_2.jpg.JPEG"]
   };
   const photoIndex = {1:0,2:0,3:0,4:0};
-
-  // 4 -> 3 -> 2 -> 1
   const clickOrder = [4,3,2,1];
   let orderIdx = 0;
 
@@ -454,7 +484,6 @@
     const nextIndex = (photoIndex[slot] + 1) % list.length;
     const nextSrc = list[nextIndex];
 
-    // preload -> fade out -> swap -> fade in
     const pre = new Image();
     pre.onload = () => {
       tile.classList.add("swap");
@@ -480,7 +509,7 @@
     swapOne(slot);
   }
 
-  // ====== NO / YES logic ======
+  // NO/YES logic
   const yes = $("yes");
   const no  = $("no");
   const result = $("result");
@@ -531,11 +560,10 @@
     yes.textContent = `TAK 💖 (${left})`;
   }
 
-  // start
   moveNoAvoidYes();
   setYesLabel();
 
-  // anti-double-fire
+  // anti double fire
   let lastFire = 0;
   function fireOnce(fn){
     const now = Date.now();
@@ -544,24 +572,11 @@
     fn();
   }
 
-  // ===== SUCCESS OVERLAY animations =====
+  // overlay fireworks
   const overlay = $("successOverlay");
   const bigHearts = $("bigHearts");
   const fwCanvas = $("fw");
   const successImg = $("successImg");
-
-  function spawnBigHeart(){
-    const s = document.createElement("span");
-    const hearts = ["💖","💘","💝","❤️","💞","💕"];
-    s.textContent = hearts[Math.floor(Math.random()*hearts.length)];
-    s.style.left = Math.floor(Math.random()*85 + 5) + "vw";
-    s.style.animationDuration = (1.1 + Math.random()*0.7) + "s";
-    s.style.opacity = "1";
-    bigHearts.appendChild(s);
-    setTimeout(()=>s.remove(), 1700);
-  }
-
-  // Canvas fireworks (lightweight)
   let fwCtx, fwW, fwH, particles = [], fwRAF = null, fwEndAt = 0;
 
   function resizeFW(){
@@ -572,25 +587,33 @@
     fwCtx = fwCanvas.getContext("2d");
   }
 
+  // lightweight colored fireworks
   function burst(x, y){
-    const count = 42 + Math.floor(Math.random()*24);
+    const count = 46 + Math.floor(Math.random()*26);
+    const colors = [
+      "rgba(255,255,255,.95)",
+      "rgba(255,160,200,.95)",
+      "rgba(255,90,170,.95)",
+      "rgba(255,230,250,.95)"
+    ];
+    const col = colors[Math.floor(Math.random()*colors.length)];
     for(let i=0;i<count;i++){
       const a = Math.random()*Math.PI*2;
-      const sp = 2.0 + Math.random()*4.5;
+      const sp = 2.0 + Math.random()*4.8;
       particles.push({
         x, y,
         vx: Math.cos(a)*sp,
         vy: Math.sin(a)*sp - (1.2 + Math.random()*1.5),
-        life: 55 + Math.random()*25
+        life: 55 + Math.random()*25,
+        col
       });
     }
   }
 
   function fwLoop(){
     if(!fwCtx) return;
-    fwCtx.clearRect(0,0,fwW,fwH);
 
-    // subtle trails
+    // trails
     fwCtx.fillStyle = "rgba(0,0,0,.20)";
     fwCtx.fillRect(0,0,fwW,fwH);
 
@@ -603,13 +626,12 @@
 
       fwCtx.beginPath();
       fwCtx.arc(p.x, p.y, 2.2 * devicePixelRatio, 0, Math.PI*2);
-      fwCtx.fillStyle = "rgba(255,255,255,.95)";
+      fwCtx.fillStyle = p.col;
       fwCtx.fill();
 
       if(p.life <= 0) particles.splice(i,1);
     }
 
-    // random bursts during overlay
     if(Date.now() < fwEndAt){
       if(Math.random() < 0.14){
         burst(
@@ -619,7 +641,6 @@
       }
       fwRAF = requestAnimationFrame(fwLoop);
     } else {
-      // stop cleanly
       fwCtx.clearRect(0,0,fwW,fwH);
       cancelAnimationFrame(fwRAF);
       fwRAF = null;
@@ -627,21 +648,33 @@
     }
   }
 
+  function spawnBigHeart(){
+    const s = document.createElement("span");
+    const hearts = ["💖","💘","💝","❤️","💞","💕"];
+    s.textContent = hearts[Math.floor(Math.random()*hearts.length)];
+    s.style.left = Math.floor(Math.random()*85 + 5) + "vw";
+    s.style.animationDuration = (1.1 + Math.random()*0.7) + "s";
+    s.style.opacity = "1";
+    bigHearts.appendChild(s);
+    setTimeout(()=>s.remove(), 1700);
+  }
+
   function showSuccessThenSMS(){
-    // show overlay
     overlay.classList.add("show");
     resizeFW();
 
-    // ensure image loads quickly
-    successImg.onload = () => {};
-    successImg.src = "images/5_2.jpg";
+    // ✅ poprawiona ścieżka do Twojego pliku:
+    successImg.src = "images/5_2.jpg.JPEG";
 
-    // big hearts burst
+    // hearts
     let heartsInt = setInterval(spawnBigHeart, 120);
     setTimeout(()=>clearInterval(heartsInt), 1800);
 
     // fireworks
     fwEndAt = Date.now() + 1700;
+    // start with a few immediate bursts
+    burst(0.35*fwW, 0.35*fwH);
+    burst(0.65*fwW, 0.30*fwH);
     fwLoop();
 
     // after 2s -> SMS
@@ -658,7 +691,6 @@
       pop();
       ensureMusicFromInteraction();
 
-      // photo changes only on buttons
       advancePhotosOnce();
 
       noClicks++;
@@ -684,26 +716,22 @@
       pop();
       ensureMusicFromInteraction();
 
-      // photo changes only on buttons (while counting)
       advancePhotosOnce();
 
       yesClicks++;
       setYesLabel();
 
       if(yesClicks >= YES_TOTAL){
-        // freeze buttons to prevent extra taps
         yes.disabled = true;
         no.disabled = true;
         yes.style.opacity = "0.85";
         no.style.opacity = "0.85";
-
-        // show full screen photo + fireworks + big hearts -> 2s -> SMS
         showSuccessThenSMS();
       }
     });
   }
 
-  // bind events (iPhone safe)
+  // bind events
   no.addEventListener("pointerdown", (e)=>{ e.preventDefault(); e.stopPropagation(); onNoClicked(e); }, {passive:false});
   no.addEventListener("touchend",   (e)=>{ e.preventDefault(); e.stopPropagation(); onNoClicked(e); }, {passive:false});
   no.addEventListener("click",      (e)=>{ e.preventDefault(); e.stopPropagation(); onNoClicked(e); });
