@@ -7,8 +7,6 @@
 
   <style>
     :root{
-      --radius: 22px;
-
       --pink1:#ffb3d1;
       --pink2:#ff6fae;
       --pink3:#ff3b8d;
@@ -42,7 +40,7 @@
       overflow:hidden;
     }
 
-    /* floating hearts - ponad wszystkim */
+    /* hearts */
     .hearts{
       position:fixed; inset:0;
       pointer-events:none;
@@ -82,18 +80,18 @@
       to{ transform: translate(70px, 40px) scale(1.10); }
     }
 
-    /* KARTA: totalnie przezroczysta */
+    /* card transparent */
     .card{
-      width: min(720px, 92vw);
+      width: min(820px, 94vw);
       background: transparent;
       border: none;
       box-shadow: none;
-      padding: clamp(14px, 3.2vw, 22px);
+      padding: clamp(12px, 3vw, 22px);
       position:relative;
       z-index:1;
     }
 
-    /* tło za napisami: lekko zmatowione (frosted) */
+    /* frosted background behind text only */
     .frost{
       position:relative;
       z-index:1;
@@ -103,9 +101,10 @@
       border: 1px solid rgba(255,255,255,.22);
       backdrop-filter: blur(14px);
       box-shadow: var(--softShadow);
+      display:inline-block;
     }
 
-    /* pytanie też “pływa” */
+    /* question floats */
     .floatWrap{
       display:inline-block;
       animation: titleDrift 6.6s ease-in-out infinite;
@@ -131,56 +130,79 @@
       font-weight: 650;
     }
 
-    /* zdjęcia dryfują */
+    /* MASONRY-ish photos grid (5 photos) */
     .photos{
+      margin: 14px auto 14px;
+      width: min(820px, 94vw);
       display:grid;
+      gap: 10px;
       grid-template-columns: repeat(3, 1fr);
-      gap:10px;
-      margin: 14px 0 14px;
+      grid-auto-rows: 170px;
       position:relative;
       z-index:1;
     }
-    .photo{
+
+    .tile{
       border-radius: 16px;
       overflow:hidden;
       background: rgba(255,255,255,.10);
       border: 1px solid rgba(255,255,255,.20);
       box-shadow: 0 16px 32px rgba(0,0,0,.14);
       backdrop-filter: blur(8px);
+      position:relative;
       will-change: transform;
-      animation: drift 5.6s ease-in-out infinite;
+      animation: drift 6.2s ease-in-out infinite;
     }
-    .photo:nth-child(2){ animation-duration: 6.4s; animation-delay: .35s; }
-    .photo:nth-child(3){ animation-duration: 7.2s; animation-delay: .7s; }
-
-    @keyframes drift{
-      0%   { transform: translateX(0) translateY(0) rotate(-0.15deg); }
-      25%  { transform: translateX(6px) translateY(-3px) rotate(0.15deg); }
-      50%  { transform: translateX(0) translateY(-6px) rotate(-0.10deg); }
-      75%  { transform: translateX(-6px) translateY(-3px) rotate(0.12deg); }
-      100% { transform: translateX(0) translateY(0) rotate(-0.15deg); }
-    }
-
-    .photo img{
+    .tile img{
       width:100%;
-      aspect-ratio: 4 / 3;
+      height:100%;
       object-fit: cover;
       display:block;
+      transform: scale(1.02);
     }
-    @media (max-width: 520px){
-      .photos{ grid-template-columns: repeat(2, 1fr); }
-      .photos .photo:nth-child(3){ grid-column: 1 / -1; }
-      .photos .photo:nth-child(3) img{ aspect-ratio: 16/9; }
+
+    /* layout */
+    .t1{ grid-column: 1 / 2; grid-row: 1 / 3; } /* tall hero */
+    .t2{ grid-column: 2 / 4; grid-row: 1 / 2; } /* wide */
+    .t3{ grid-column: 2 / 3; grid-row: 2 / 3; }
+    .t4{ grid-column: 3 / 4; grid-row: 2 / 4; } /* tall */
+    .t5{ grid-column: 1 / 3; grid-row: 3 / 4; } /* wide */
+
+    /* each drifts differently */
+    .t1{ animation-duration: 6.8s; animation-delay: .1s; }
+    .t2{ animation-duration: 7.4s; animation-delay: .4s; }
+    .t3{ animation-duration: 6.2s; animation-delay: .7s; }
+    .t4{ animation-duration: 7.9s; animation-delay: .2s; }
+    .t5{ animation-duration: 6.9s; animation-delay: .55s; }
+
+    @keyframes drift{
+      0%   { transform: translateX(0) translateY(0) rotate(-0.12deg); }
+      25%  { transform: translateX(6px) translateY(-3px) rotate(0.12deg); }
+      50%  { transform: translateX(0) translateY(-6px) rotate(-0.08deg); }
+      75%  { transform: translateX(-6px) translateY(-3px) rotate(0.10deg); }
+      100% { transform: translateX(0) translateY(0) rotate(-0.12deg); }
+    }
+
+    @media (max-width: 720px){
+      .photos{
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: 160px;
+      }
+      .t1{ grid-column: 1 / 3; grid-row: 1 / 3; }
+      .t2{ grid-column: 1 / 3; grid-row: 3 / 4; }
+      .t3{ grid-column: 1 / 2; grid-row: 4 / 5; }
+      .t4{ grid-column: 2 / 3; grid-row: 4 / 6; }
+      .t5{ grid-column: 1 / 2; grid-row: 5 / 6; }
     }
 
     #arena{
-      position: relative;
       margin-top: 10px;
       display:flex;
       align-items:center;
       justify-content:center;
       gap: 14px;
       z-index: 2;
+      position:relative;
     }
 
     button{
@@ -198,6 +220,7 @@
       transition: transform .12s ease, filter .12s ease;
       position:relative;
       z-index:1;
+      touch-action: manipulation;
     }
     button:active{ transform: scale(.98); }
 
@@ -206,7 +229,6 @@
       color:white;
     }
 
-    /* NO */
     #no{
       background: linear-gradient(135deg, #ff355d, #e11d48);
       color:white;
@@ -217,7 +239,6 @@
       transform: translate(-50%, -50%);
       transition: left .22s ease, top .22s ease, transform .22s ease;
       will-change: left, top, transform;
-      touch-action: manipulation;
     }
 
     /* overlay */
@@ -243,6 +264,7 @@
       backdrop-filter: blur(14px);
       padding: 16px 16px 14px;
     }
+
     .panel h2{
       margin: 4px 0 8px;
       font-size: clamp(20px, 5vw, 28px);
@@ -267,7 +289,7 @@
       box-shadow: 0 12px 22px rgba(0,0,0,.12);
     }
 
-    /* muzyka toggle */
+    /* music toggle */
     #musicBtn{
       position:fixed;
       right: 12px;
@@ -283,6 +305,22 @@
       min-height: auto;
       font-weight: 900;
     }
+
+    /* ✨ smaczek: sparkles */
+    .spark{
+      position:fixed;
+      z-index: 100000;
+      pointer-events:none;
+      font-size: 18px;
+      animation: spark 700ms ease-out forwards;
+      filter: drop-shadow(0 10px 14px rgba(0,0,0,.18));
+      will-change: transform, opacity;
+    }
+    @keyframes spark{
+      0%   { transform: translate(-50%, -50%) scale(.8); opacity:0; }
+      15%  { opacity:1; }
+      100% { transform: translate(-50%, -70px) scale(1.3) rotate(18deg); opacity:0; }
+    }
   </style>
 </head>
 
@@ -295,13 +333,15 @@
   <div class="card">
     <div class="frost floatWrap">
       <h1 id="title">💘 Czy zostaniesz moją Walentynką Wiktoria? 💘</h1>
-      <p class="sub" id="subtitle">Obiecuję: uśmiech, coś pysznego i dużo czułości (w pakiecie) 🥰</p>
+      <p class="sub">Obiecuję: uśmiech, coś pysznego i dużo czułości (w pakiecie) 🥰</p>
     </div>
 
     <div class="photos">
-      <div class="photo"><img src="images/1.jpg" alt="photo 1"></div>
-      <div class="photo"><img src="images/2.jpg" alt="photo 2"></div>
-      <div class="photo"><img src="images/3.jpg" alt="photo 3"></div>
+      <div class="tile t1"><img src="images/1.jpg" alt="photo 1"></div>
+      <div class="tile t2"><img src="images/2.jpg" alt="photo 2"></div>
+      <div class="tile t3"><img src="images/3.jpg" alt="photo 3"></div>
+      <div class="tile t4"><img src="images/4.jpg" alt="photo 4"></div>
+      <div class="tile t5"><img src="images/5.jpg" alt="photo 5"></div>
     </div>
 
     <div id="arena">
@@ -329,10 +369,10 @@
   <button id="musicBtn" aria-label="Muzyka">🔊 Muzyka</button>
 
   <script>
+    // ====== settings ======
     const MY_PHONE_E164 = "+48690980775";
-    const KEY = "valentine_answer_v13";
+    const KEY = "valentine_answer_v14";
     const needed = 10;
-    const AUDIO_SRC = "MORAD%20-%20LAMINE.mp3";
 
     const NO_LINES = [
       "na pewno?",
@@ -357,7 +397,21 @@
     }
     function nowStamp(){ return new Date().toLocaleString("pl-PL"); }
 
-    // pop
+    // ====== sparkles (smaczek) ======
+    function sparkleAt(x, y){
+      const chars = ["✨","💖","💘","🌟","💞"];
+      const s = document.createElement("div");
+      s.className = "spark";
+      s.textContent = chars[Math.floor(Math.random()*chars.length)];
+      s.style.left = x + "px";
+      s.style.top  = y + "px";
+      s.style.fontSize = (16 + Math.random()*10) + "px";
+      s.style.transform = `translate(-50%,-50%) rotate(${(Math.random()*40-20).toFixed(1)}deg)`;
+      document.body.appendChild(s);
+      setTimeout(()=>s.remove(), 800);
+    }
+
+    // ====== pop sound (web audio) ======
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
     function ensureAudio(){
@@ -387,23 +441,14 @@
       });
     }
 
-    // music
+    // ====== music ======
     const bgm = $("bgm");
     const musicBtn = $("musicBtn");
     let musicOn = false;
 
-    (function initBgm(){
-      try{
-        const source = bgm.querySelector("source");
-        if(source) source.src = AUDIO_SRC;
-        bgm.load();
-      }catch(e){}
-    })();
-
     async function startMusic(){
       try{
         ensureAudio();
-        bgm.muted = false;
         bgm.volume = 0.35;
         await bgm.play();
         musicOn = true;
@@ -418,10 +463,10 @@
       musicOn = false;
       musicBtn.textContent = "🔊 Muzyka";
     }
-    musicBtn.addEventListener("click", () => { musicOn ? stopMusic() : startMusic(); });
-    setTimeout(() => startMusic(), 300);
+    musicBtn.addEventListener("click", () => musicOn ? stopMusic() : startMusic());
+    setTimeout(()=>startMusic(), 250);
 
-    // hearts
+    // ====== hearts ======
     const heartsBox = $("hearts");
     const heartChars = ["💗","💖","💘","💕","💞","❤️‍🔥","💝"];
     function spawnHeart(){
@@ -441,7 +486,7 @@
     for(let i=0;i<18;i++) spawnHeart();
     setInterval(spawnHeart, 420);
 
-    // elements
+    // ====== elements ======
     const name = getNameFromUrl();
     $("title").textContent = `💘 Czy zostaniesz moją Walentynką ${name}? 💘`;
 
@@ -453,7 +498,7 @@
     const sendAgain = $("sendAgain");
     const closeOverlay = $("closeOverlay");
 
-    // storage
+    // ====== storage ======
     function setLocalAnswer(ans){
       localStorage.setItem(KEY, JSON.stringify({ answer: ans, time: new Date().toISOString(), name }));
     }
@@ -461,7 +506,7 @@
       try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; }
     }
 
-    // sms
+    // ====== sms ======
     function isIOS(){
       return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     }
@@ -473,7 +518,7 @@
       setTimeout(() => { window.location.href = url; }, 60);
     }
 
-    // NO movement
+    // ====== NO movement (escapes only after press) ======
     let noClicks = 0;
 
     function intersects(ax, ay, aw, ah, bx, by, bw, bh){
@@ -519,7 +564,7 @@
     }
 
     function setNoLabel(step){
-      const left = needed - step;          // ile zostało
+      const left = needed - step;
       const phrase = NO_LINES[step-1] || "serio?";
       no.textContent = `${phrase} 😈 (${left})`;
     }
@@ -528,7 +573,7 @@
     no.textContent = "NIE 😈";
     moveNoAvoidYes();
 
-    // Anti-double-fire (touch/click/pointer mogą się dublować)
+    // anti-double-fire
     let lastFire = 0;
     function fireOnce(fn){
       const now = Date.now();
@@ -537,16 +582,27 @@
       fn();
     }
 
-    function handleNo(){
+    function showOverlay(ans){
+      overlayTitle.textContent = ans === "TAK 💖" ? "YAY! 💘" : "Okej 😈";
+      overlayText.textContent = ans === "TAK 💖"
+        ? `To ustalone, ${name} — Walentynki są nasze 😄`
+        : `Odpowiedź zapisana: ${ans}`;
+      overlay.classList.add("on");
+    }
+
+    function handleNo(e){
       fireOnce(async () => {
+        const x = (e.touches?.[0]?.clientX) ?? e.clientX ?? (window.innerWidth/2);
+        const y = (e.touches?.[0]?.clientY) ?? e.clientY ?? (window.innerHeight/2);
+        sparkleAt(x, y);
+
         ensureAudio(); popUpUp();
         if(!musicOn) { try { await startMusic(); } catch(_){} }
 
         noClicks++;
-
         if(noClicks < needed){
           setNoLabel(noClicks);
-          moveNoAvoidYes(); // ucieka dopiero po “kliknięciu”
+          moveNoAvoidYes();
         } else {
           const ans = "NIE 😈";
           setLocalAnswer(ans);
@@ -557,21 +613,20 @@
       });
     }
 
-    // Podpinamy pod kilka eventów, żeby na pewno działało wszędzie
-    no.addEventListener("pointerdown", (e)=>{ e.preventDefault(); e.stopPropagation(); handleNo(); }, {passive:false});
-    no.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); handleNo(); }, {passive:false});
-    no.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); handleNo(); });
+    // bind multiple events
+    no.addEventListener("pointerdown", (e)=>{ e.preventDefault(); e.stopPropagation(); handleNo(e); }, {passive:false});
+    no.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); handleNo(e); }, {passive:false});
+    no.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); handleNo(e); });
 
-    function showOverlay(ans){
-      overlayTitle.textContent = ans === "TAK 💖" ? "YAY! 💘" : "Okej 😈";
-      overlayText.textContent = ans === "TAK 💖"
-        ? `To ustalone, ${name} — Walentynki są nasze 😄`
-        : `Odpowiedź zapisana: ${ans}`;
-      overlay.classList.add("on");
-    }
-
-    function handleYes(){
+    function handleYes(e){
       fireOnce(async () => {
+        const x = (e.touches?.[0]?.clientX) ?? e.clientX ?? (window.innerWidth/2);
+        const y = (e.touches?.[0]?.clientY) ?? e.clientY ?? (window.innerHeight/2);
+        // trochę więcej iskier na TAK
+        for(let i=0;i<5;i++){
+          setTimeout(()=>sparkleAt(x + (Math.random()*60-30), y + (Math.random()*40-20)), i*40);
+        }
+
         ensureAudio(); popUpUp();
         if(!musicOn) { try { await startMusic(); } catch(_){} }
 
@@ -582,8 +637,8 @@
       });
     }
 
-    yes.addEventListener("pointerdown", (e)=>{ e.preventDefault(); handleYes(); }, {passive:false});
-    yes.addEventListener("click", (e)=>{ e.preventDefault(); handleYes(); });
+    yes.addEventListener("pointerdown", (e)=>{ e.preventDefault(); handleYes(e); }, {passive:false});
+    yes.addEventListener("click", (e)=>{ e.preventDefault(); handleYes(e); });
 
     sendAgain.addEventListener("click", async () => {
       ensureAudio(); popUpUp();
