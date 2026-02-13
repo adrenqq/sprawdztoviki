@@ -132,7 +132,16 @@
 
   h1{ margin:4px 0 8px; font-size: clamp(22px, 5.6vw, 30px); line-height:1.15; }
   .sub{ margin:0; font-size: 14px; font-weight: 700; opacity:.92; }
-  .note{ margin-top: 10px; font-size:14px; font-weight:800; opacity:.92; }
+
+  /* ✅ note: teraz długi tekst */
+  .note{
+    margin-top: 10px;
+    font-size: 13.8px;
+    font-weight: 750;
+    opacity: .96;
+    line-height: 1.45;
+    max-width: 420px;
+  }
 
   .photos{
     display:grid;
@@ -167,14 +176,9 @@
     display:block;
     user-select:none;
     -webkit-user-drag:none;
-
-    /* ✅ pełne zdjęcia (bez ucinania) */
     object-fit: contain;
-
-    /* ✅ zamiast białego kwadratu: delikatna “różowa poświata” pod zdjęciem */
     background:
       radial-gradient(420px 260px at 50% 45%, rgba(255,255,255,.10), rgba(255,255,255,.02));
-
     transform: scale(1.0);
     opacity:1;
     transition: opacity 220ms ease, transform 220ms ease;
@@ -351,10 +355,8 @@
           <br><br>
           Jeżeli zapyta Cię o pozwolenie do przejścia w imassage- kliknij . Spokojnie to bezpieczna strona, sam ją pisałem.
           <br><br>
-          <!-- ✅ DOPISEK -->
           W prawym dolnym rogu masz przycisk muzyki (jeżeli muzyka sama nie zacznie grać) kliknij go. Włącz dźwięk i dzwonek, żeby działał dźwięk z poziomu telefonu.
           <br><br>
-
           I hope u enjoy 😇🥰❤️
         </span>
       </div>
@@ -366,9 +368,24 @@
   <!-- MAIN -->
   <div class="card" id="mainCard" style="display:none;">
     <div class="titleWrap">
-      <h1 id="title">💘 Czy zostaniesz moją Walentynką Wiktoria? 💘</h1>
+      <!-- ✅ tytuł podmieniony -->
+      <h1 id="title">💘 Wiki czy zostaniesz moją walentynką? 💘</h1>
+
       <p class="sub">Obiecuję: uśmiech, coś pysznego i dużo czułości (w pakiecie) 🥰</p>
-      <div class="note">XXXXX</div>
+
+      <!-- ✅ XXXXX usunięte, wstawiony Twój tekst -->
+      <div class="note">
+        Wiki, jesteś dla mnie księżniczką i w moich oczach zawsze nią będziesz. Kocham patrzeć na twój uśmiech,
+        uwielbiam jak na mnie patrzysz, uwielbiam każdą spędzona z tobą chwile, wakacje z tobą są najlepsze,
+        patrząc na nasze wspólne zdjęcia nawet nie wiesz jak bardzo brakuje mi tych chwil.
+        Chciałbym napisać o wiele więcej ale nie chce psuć pozytywnego odbioru który chce przekazać
+        ( i w praktyce zaraz braknie miejsca tutaj :p).
+        Czy razem spędzimy te walentynki czy nie, wiedz że bardzo cie kocham.
+        <br><br>
+        You mean the world to me.
+        <br>
+        -Adrian
+      </div>
     </div>
 
     <div class="photos">
@@ -423,14 +440,6 @@
   ];
 
   const $ = (id) => document.getElementById(id);
-
-  function getNameFromUrl(){
-    const p = new URLSearchParams(location.search);
-    const raw = (p.get("name") || "").trim();
-    const safe = raw.replace(/[<>]/g, "").slice(0, 24);
-    return safe || "Wiktoria";
-  }
-  $("title").textContent = `💘 Czy zostaniesz moją Walentynką ${getNameFromUrl()}? 💘`;
 
   // warm cache
   const warmImages = [
@@ -509,7 +518,7 @@
     if(!musicOn) startMusic().catch(()=>{});
   }
 
-  // background hearts
+  // background hearts (lekkie serca lecą cały czas)
   const heartsBox = $("hearts");
   const heartChars = ["💗","💖","💘","💕","💞","❤️‍🔥","💝"];
   function spawnHeart(){
@@ -736,7 +745,7 @@
   function onNoClicked(e){
     fireOnce(() => {
       const x = (e.touches?.[0]?.clientX) ?? e.clientX ?? (innerWidth/2);
-      const y = (e.touches?.[0]?.clientY) ?? e.clientY ?? (innerHeight/2);
+      const y = (e.touches?.[0]?.clientY) ?? e.clientY ?? (innerWidth/2);
       sparkleAt(x, y);
       pop();
       ensureMusicFromInteraction();
@@ -757,7 +766,7 @@
   function onYesClicked(e){
     fireOnce(() => {
       const x = (e.touches?.[0]?.clientX) ?? e.clientX ?? (innerWidth/2);
-      const y = (e.touches?.[0]?.clientY) ?? e.clientY ?? (innerHeight/2);
+      const y = (e.touches?.[0]?.clientY) ?? e.clientY ?? (innerWidth/2);
       for(let i=0;i<3;i++){
         setTimeout(()=>sparkleAt(x + (Math.random()*60-30), y + (Math.random()*40-20)), i*50);
       }
