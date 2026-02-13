@@ -9,20 +9,17 @@
     :root{
       --radius: 22px;
 
-      /* bardziej różowo */
       --pink1:#ffb3d1;
       --pink2:#ff6fae;
       --pink3:#ff3b8d;
 
       --text:#140a12;
-      --muted: rgba(20,10,18,.70);
-
       --padTop: max(16px, env(safe-area-inset-top));
       --padBot: max(16px, env(safe-area-inset-bottom));
       --padLR: 14px;
 
+      --softShadow: 0 14px 30px rgba(0,0,0,.14);
       --shadow: 0 18px 55px rgba(0,0,0,.18);
-      --soft: 0 14px 30px rgba(0,0,0,.14);
     }
 
     *{ box-sizing:border-box; }
@@ -38,8 +35,6 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       text-align:center;
       color:var(--text);
-
-      /* mocniej różowe tło */
       background:
         radial-gradient(900px 650px at 20% 10%, rgba(255,255,255,.35) 0%, transparent 55%),
         radial-gradient(900px 650px at 80% 90%, rgba(255,255,255,.28) 0%, transparent 55%),
@@ -69,7 +64,6 @@
       100%{ transform: translateY(-25svh) translateX(90px) rotate(360deg); opacity:0; }
     }
 
-    /* delikatne różowe “mgły” */
     .blob{
       position:fixed;
       width: 560px; height: 560px;
@@ -88,7 +82,7 @@
       to{ transform: translate(70px, 40px) scale(1.10); }
     }
 
-    /* KARTA: całkowicie przezroczysta (zero tła) */
+    /* KARTA: totalnie przezroczysta */
     .card{
       width: min(720px, 92vw);
       background: transparent;
@@ -108,7 +102,7 @@
       background: rgba(255,255,255,.14);
       border: 1px solid rgba(255,255,255,.22);
       backdrop-filter: blur(14px);
-      box-shadow: var(--soft);
+      box-shadow: var(--softShadow);
     }
 
     /* pytanie też “pływa” */
@@ -137,7 +131,7 @@
       font-weight: 650;
     }
 
-    /* zdjęcia “dryfują” */
+    /* zdjęcia dryfują */
     .photos{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -146,7 +140,6 @@
       position:relative;
       z-index:1;
     }
-
     .photo{
       border-radius: 16px;
       overflow:hidden;
@@ -174,7 +167,6 @@
       object-fit: cover;
       display:block;
     }
-
     @media (max-width: 520px){
       .photos{ grid-template-columns: repeat(2, 1fr); }
       .photos .photo:nth-child(3){ grid-column: 1 / -1; }
@@ -286,7 +278,7 @@
       box-shadow: 0 12px 22px rgba(0,0,0,.12);
     }
 
-    /* mały przycisk muzyki */
+    /* muzyka toggle */
     #musicBtn{
       position:fixed;
       right: 12px;
@@ -347,17 +339,16 @@
   <audio id="bgm" preload="auto" loop playsinline>
     <source src="MORAD%20-%20LAMINE.mp3" type="audio/mpeg">
   </audio>
-
   <button id="musicBtn" aria-label="Muzyka">🔊 Muzyka</button>
 
   <script>
     // ========= SETTINGS =========
     const MY_PHONE_E164 = "+48690980775";
-    const KEY = "valentine_answer_v11";
+    const KEY = "valentine_answer_v12";
     const needed = 10;
     const AUDIO_SRC = "MORAD%20-%20LAMINE.mp3";
 
-    // Teksty po kliknięciach "NIE" (1..10)
+    // Teksty po kliknięciach (1..10). Ostatnie kilka: “od siebie” głupie.
     const NO_LINES = [
       "na pewno?",
       "Może jednak?",
@@ -368,10 +359,9 @@
       "Dobra, mam plan: Ty mówisz TAK, ja udaję, że to było Twoje 😂",
       "To ja już zamawiam pizzę… nie zmuszaj mnie do odwołania 😭",
       "Ostatnia prośba: chociaż uśmiech? 🥺",
-      "No to kliknęło się… a teraz i tak Cię lubię 😈"
+      "No dobra, wygrałaś… ale ja i tak jestem uroczy 😈"
     ];
 
-    // ========= UTIL =========
     const $ = (id) => document.getElementById(id);
 
     function getNameFromUrl(){
@@ -382,10 +372,9 @@
     }
     function nowStamp(){ return new Date().toLocaleString("pl-PL"); }
 
-    // ========= AUDIO (pop + mp3) =========
+    // ========= AUDIO pop =========
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
-
     function ensureAudio(){
       try{
         if(!AudioCtx) return null;
@@ -394,14 +383,11 @@
         return audioCtx;
       }catch(e){ return null; }
     }
-
     function popUpUp(){
       const ctx = ensureAudio();
       if(!ctx) return;
-
       const times = [0.00, 0.07, 0.14];
       const freqs = [420, 560, 740];
-
       times.forEach((dt, i) => {
         const o = ctx.createOscillator();
         const g = ctx.createGain();
@@ -416,6 +402,7 @@
       });
     }
 
+    // ========= MUSIC =========
     const bgm = $("bgm");
     const musicBtn = $("musicBtn");
     let musicOn = false;
@@ -509,7 +496,7 @@
       setTimeout(() => { window.location.href = url; }, 60);
     }
 
-    // ========= NO: ucieka dopiero po kliknięciu (10 razy) =========
+    // ========= NO movement (ucieka dopiero po kliknięciu) =========
     let noClicks = 0;
 
     function intersects(ax, ay, aw, ah, bx, by, bw, bh){
@@ -526,6 +513,7 @@
         bottom: window.innerHeight - padBot - safe
       };
     }
+
     function moveNoAvoidYes(){
       const bounds = getSafeBounds();
       const btn = no.getBoundingClientRect();
@@ -540,7 +528,7 @@
         x = bounds.left + Math.random() * maxX;
         y = bounds.top + Math.random() * maxY;
         tries++;
-        if(tries > 200) break;
+        if(tries > 240) break;
       } while(
         intersects(
           x, y, btn.width, btn.height,
@@ -549,54 +537,51 @@
         )
       );
 
+      // WAŻNE: ustawiamy i left i top — wtedy naprawdę “ucieka”
       no.style.left = x + "px";
       no.style.top  = y + "px";
       no.style.transform = "translate(0,0)";
     }
 
-    // startowa pozycja
-    moveNoAvoidYes();
-
-    function setNoText(step, left){
-      // step: 1..needed
-      const phrase = NO_LINES[step-1] || "NIE";
-      // na starcie ma być "NIE 😈", potem zmienia się na frazy
-      if(step === 0){
-        no.textContent = "NIE 😈";
-      } else {
-        no.textContent = `${phrase} 😈 (${left})`;
-      }
+    function setNoLabel(step){
+      // step = ile kliknięć wykonano (1..needed)
+      const left = needed - step;
+      const phrase = NO_LINES[step-1] || "serio?";
+      no.textContent = `${phrase} 😈 (${left})`;
     }
 
-    // initial label
-    setNoText(0, needed);
+    // start: ustaw losowo miejsce, bez licznika
+    no.textContent = "NIE 😈";
+    moveNoAvoidYes();
 
-    no.addEventListener("click", async (e) => {
+    // ZAMIANA: używamy pointerdown (pewniej niż click na mobile)
+    no.addEventListener("pointerdown", async (e) => {
       e.preventDefault();
+      e.stopPropagation();
+
       ensureAudio();
       popUpUp();
       if(!musicOn) { try { await startMusic(); } catch(_){} }
 
       noClicks++;
-      const left = needed - noClicks;
 
       if(noClicks < needed){
-        // zmieniamy tekst i uciekamy
-        setNoText(noClicks, left);
-        moveNoAvoidYes();
+        setNoLabel(noClicks);   // pokaż nowy tekst + licznik ile zostało
+        moveNoAvoidYes();       // ucieka dopiero po kliknięciu
         result.textContent = "";
       } else {
-        // ostatni klik: zapis + SMS "NIE"
         const ans = "NIE 😈";
         setLocalAnswer(ans);
         no.style.display = "none";
         openMessageApp(ans);
         showOverlay(ans);
       }
-    });
+    }, { passive:false });
 
     // ========= YES =========
-    yes.addEventListener("click", async () => {
+    yes.addEventListener("pointerdown", async (e) => {
+      e.preventDefault();
+
       ensureAudio();
       popUpUp();
       if(!musicOn) { try { await startMusic(); } catch(_){} }
@@ -606,7 +591,7 @@
       result.textContent = "YAY! 💘 Widzimy się na Walentynki 😄";
       openMessageApp(ans);
       showOverlay(ans);
-    });
+    }, { passive:false });
 
     function showOverlay(ans){
       overlayTitle.textContent = ans === "TAK 💖" ? "YAY! 💘" : "Okej 😈";
@@ -616,17 +601,20 @@
       overlay.classList.add("on");
     }
 
-    sendAgain.addEventListener("click", async () => {
+    sendAgain.addEventListener("pointerdown", async (e) => {
+      e.preventDefault();
       ensureAudio();
       popUpUp();
       if(!musicOn) { try { await startMusic(); } catch(_){} }
 
       const saved = getLocalAnswer();
       openMessageApp(saved?.answer || "TAK 💖");
-    });
+    }, { passive:false });
+
     closeOverlay.addEventListener("click", () => overlay.classList.remove("on"));
 
-    window.addEventListener("orientationchange", () => setTimeout(moveNoAvoidYes, 300));
+    window.addEventListener("orientationchange", () => setTimeout(moveNoAvoidYes, 250));
+    window.addEventListener("resize", () => setTimeout(moveNoAvoidYes, 120));
   </script>
 </body>
 </html>
