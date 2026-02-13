@@ -10,13 +10,11 @@
       --shadow: 0 18px 55px rgba(0,0,0,.18);
       --radius: 22px;
       --glass: rgba(255, 210, 225, .86);
-      --glass2: rgba(255,255,255,.55);
       --text: #121212;
       --muted: rgba(0,0,0,.65);
       --padTop: max(16px, env(safe-area-inset-top));
       --padBot: max(16px, env(safe-area-inset-bottom));
       --padLR: 14px;
-      --safe: 12px;
     }
     *{ box-sizing:border-box; }
     html, body{ height:100%; }
@@ -37,12 +35,12 @@
       overflow:hidden;
     }
 
-    /* floating hearts */
+    /* floating hearts - MUST be visible above overlay too */
     .hearts{
       position:fixed; inset:0;
       pointer-events:none;
-      opacity:.55;
-      z-index:0;
+      opacity:.62;
+      z-index: 99998; /* above overlay */
       filter: drop-shadow(0 10px 20px rgba(0,0,0,.14));
     }
     .hearts span{
@@ -59,7 +57,6 @@
       100%{ transform: translateY(-25svh) translateX(90px) rotate(360deg); opacity:0; }
     }
 
-    /* subtle glow blobs */
     .blob{
       position:fixed;
       width: 520px; height: 520px;
@@ -162,20 +159,18 @@
       position:relative;
       z-index:1;
     }
-    button:hover{ filter: brightness(1.02); }
     button:active{ transform: scale(.98); }
-
     #yes{
       background: linear-gradient(135deg, #22c55e, #16a34a);
       color:white;
     }
 
-    /* NO lives outside and runs around (smooth) */
+    /* NO runs around (smooth) */
     #no{
       background: linear-gradient(135deg, #ef4444, #dc2626);
       color:white;
       position:fixed;
-      z-index: 9999;
+      z-index: 99999; /* above everything clickable */
       left: 70%;
       top: 60%;
       transform: translate(-50%, -50%);
@@ -192,22 +187,8 @@
       position:relative;
       z-index:1;
     }
-    .hint{
-      margin-top: 10px;
-      font-size: clamp(12px, 3.2vw, 13.5px);
-      opacity:.9;
-      position:relative;
-      z-index:1;
-    }
-    .tiny{
-      margin-top: 8px;
-      font-size: 12px;
-      opacity:.7;
-      position:relative;
-      z-index:1;
-    }
 
-    /* second screen */
+    /* overlay (second screen) */
     .overlay{
       position:absolute;
       inset:0;
@@ -215,15 +196,15 @@
       align-items:center;
       justify-content:center;
       padding: 18px;
-      z-index:5;
-      background: radial-gradient(800px 500px at 30% 20%, rgba(255,255,255,.7), rgba(255,255,255,.25) 55%, rgba(255,255,255,.05));
+      z-index: 5;
+      background: radial-gradient(800px 500px at 30% 20%, rgba(255,255,255,.65), rgba(255,255,255,.22) 55%, rgba(255,255,255,.06));
       backdrop-filter: blur(12px);
     }
     .overlay.on{ display:flex; }
     .panel{
       width:min(560px, 92%);
-      background: rgba(255,255,255,.65);
-      border: 1px solid rgba(255,255,255,.7);
+      background: rgba(255,255,255,.68);
+      border: 1px solid rgba(255,255,255,.75);
       border-radius: 20px;
       box-shadow: 0 18px 55px rgba(0,0,0,.18);
       padding: 16px 16px 14px;
@@ -250,16 +231,6 @@
       color:#111;
       box-shadow: 0 12px 22px rgba(0,0,0,.12);
     }
-
-    /* confetti canvas */
-    #confetti{
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      z-index: 4;
-      display:none;
-    }
-    #confetti.on{ display:block; }
   </style>
 </head>
 
@@ -268,9 +239,8 @@
   <div class="blob b2"></div>
 
   <div class="hearts" id="hearts"></div>
-  <canvas id="confetti"></canvas>
 
-  <div class="card" id="card">
+  <div class="card">
     <h1 id="title">💘 Czy zostaniesz moją Walentynką Wiktoria? 💘</h1>
     <p class="sub" id="subtitle">Obiecuję: uśmiech, coś pysznego i dużo czułości (w pakiecie) 🥰</p>
 
@@ -284,22 +254,15 @@
       <button id="yes">TAK 💖</button>
     </div>
 
-    <div class="hint" id="hint">Kliknij „TAK”, żeby odblokować szczęście ✨</div>
-    <div class="tiny" id="tiny">PS. „NIE” da się kliknąć… ale dopiero po 6 trafieniach 😅</div>
-
     <div id="result"></div>
 
-    <!-- second screen -->
     <div class="overlay" id="overlay">
       <div class="panel">
-        <h2 id="yayTitle">YAY! 💘</h2>
-        <p id="yayText">Widzimy się na Walentynki 😄</p>
+        <h2 id="overlayTitle">💘</h2>
+        <p id="overlayText"></p>
         <div class="row">
           <button id="sendAgain">Wyślij jeszcze raz 📩</button>
           <button class="ghost" id="closeOverlay">Zamknij ✨</button>
-        </div>
-        <div class="tiny" style="margin-top:10px; opacity:.75;">
-          Jeśli telefon nie otworzy SMS automatycznie, skopiuję tekst do schowka.
         </div>
       </div>
     </div>
@@ -309,14 +272,13 @@
 
   <script>
     // ========= SETTINGS =========
-    const MY_PHONE_E164 = "+48690980775";   // iMessage/SMS
-    const KEY = "valentine_answer_v5";
-    const needed = 6;
+    const MY_PHONE_E164 = "+48690980775";
+    const KEY = "valentine_answer_v6";
+    const needed = 5;
 
     // ========= UTIL =========
     const $ = (id) => document.getElementById(id);
-
-    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+    function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
 
     function getNameFromUrl(){
       const p = new URLSearchParams(location.search);
@@ -324,29 +286,36 @@
       const safe = raw.replace(/[<>]/g, "").slice(0, 24);
       return safe || "Wiktoria";
     }
+    function nowStamp(){ return new Date().toLocaleString("pl-PL"); }
 
-    function nowStamp(){
-      return new Date().toLocaleString("pl-PL");
+    // ========= MOBILE AUDIO FIX =========
+    // One AudioContext; resumed on every user gesture if needed.
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function ensureAudio(){
+      try{
+        if(!AudioCtx) return null;
+        if(!audioCtx) audioCtx = new AudioCtx();
+        if(audioCtx.state === "suspended") audioCtx.resume();
+        return audioCtx;
+      }catch(e){ return null; }
     }
 
-    // ========= SOUND (no files) =========
-    function popSound(){
-      try{
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioCtx();
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.type = "triangle";
-        o.frequency.setValueAtTime(520, ctx.currentTime);
-        o.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.12);
-        g.gain.setValueAtTime(0.0001, ctx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.28, ctx.currentTime + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
-        o.connect(g); g.connect(ctx.destination);
-        o.start();
-        o.stop(ctx.currentTime + 0.16);
-        o.onended = () => ctx.close();
-      }catch(e){}
+    function clickPop(){
+      const ctx = ensureAudio();
+      if(!ctx) return;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(520, ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(190, ctx.currentTime + 0.12);
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.14);
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + 0.15);
     }
 
     // ========= HEARTS =========
@@ -375,177 +344,57 @@
     // ========= ELEMENTS =========
     const name = getNameFromUrl();
     const title = $("title");
-    const subtitle = $("subtitle");
-    const hint = $("hint");
-    const tiny = $("tiny");
     const yes = $("yes");
     const no  = $("no");
     const result = $("result");
     const overlay = $("overlay");
-    const yayTitle = $("yayTitle");
-    const yayText = $("yayText");
+    const overlayTitle = $("overlayTitle");
+    const overlayText = $("overlayText");
     const sendAgain = $("sendAgain");
     const closeOverlay = $("closeOverlay");
 
     title.textContent = `💘 Czy zostaniesz moją Walentynką ${name}? 💘`;
-    subtitle.textContent = `Obiecuję: uśmiech, coś pysznego i dużo czułości (w pakiecie) 🥰`;
 
     // ========= STORAGE =========
     function setLocalAnswer(ans){
-      localStorage.setItem(KEY, JSON.stringify({
-        answer: ans,
-        time: new Date().toISOString(),
-        name
-      }));
+      localStorage.setItem(KEY, JSON.stringify({ answer: ans, time: new Date().toISOString(), name }));
     }
     function getLocalAnswer(){
       try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; }
     }
 
-    const saved = getLocalAnswer();
-    if(saved?.answer){
-      result.textContent = `Zapisane na tym telefonie: ${saved.answer} ✅`;
-    }
-
     // ========= SMS / iMessage =========
-    async function copyToClipboard(text){
-      try{
-        await navigator.clipboard.writeText(text);
-        return true;
-      }catch(e){
-        return false;
-      }
-    }
-
-    async function openMessageApp(ans){
+    function openMessageApp(ans){
       const text = `Odpowiedź: ${ans} 💘 (czas: ${nowStamp()})`;
       // iOS: sms:+48...&body=...
-      const url = `sms:${MY_PHONE_E164}&body=${encodeURIComponent(text)}`;
-
-      // Try open SMS app
-      window.location.href = url;
-
-      // Fallback: copy after a moment (if system blocks)
-      setTimeout(async () => {
-        const ok = await copyToClipboard(text);
-        if(ok){
-          result.textContent = "Tekst SMS skopiowany do schowka ✅ (jeśli SMS się nie otworzył)";
-        }
-      }, 700);
-
-      return text;
+      window.location.href = `sms:${MY_PHONE_E164}&body=${encodeURIComponent(text)}`;
     }
 
-    // ========= CONFETTI =========
-    const canvas = $("confetti");
-    const ctx = canvas.getContext("2d");
-    let confettiOn = false;
-    let confetti = [];
-    let rafId = null;
-
-    function resizeCanvas(){
-      canvas.width = window.innerWidth * devicePixelRatio;
-      canvas.height = window.innerHeight * devicePixelRatio;
-      ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
-    }
-    window.addEventListener("resize", resizeCanvas, {passive:true});
-    resizeCanvas();
-
-    function startConfetti(){
-      canvas.classList.add("on");
-      confettiOn = true;
-      confetti = [];
-      const count = Math.min(220, Math.floor(window.innerWidth * 0.22));
-      for(let i=0;i<count;i++){
-        confetti.push({
-          x: Math.random()*window.innerWidth,
-          y: -20 - Math.random()*window.innerHeight*0.4,
-          vx: -1.2 + Math.random()*2.4,
-          vy: 2.6 + Math.random()*4.2,
-          r: 2 + Math.random()*4,
-          rot: Math.random()*Math.PI*2,
-          vr: -0.12 + Math.random()*0.24,
-          life: 220 + Math.random()*140,
-        });
-      }
-      tickConfetti();
-      setTimeout(stopConfetti, 2600);
-    }
-
-    function stopConfetti(){
-      confettiOn = false;
-      canvas.classList.remove("on");
-      if(rafId) cancelAnimationFrame(rafId);
-      rafId = null;
-      confetti = [];
-      ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
-    }
-
-    function tickConfetti(){
-      if(!confettiOn) return;
-      ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
-
-      for(const p of confetti){
-        p.x += p.vx;
-        p.y += p.vy;
-        p.rot += p.vr;
-        p.vy += 0.02; // gravity
-        p.life -= 1;
-
-        // simple wrap
-        if(p.x < -30) p.x = window.innerWidth + 30;
-        if(p.x > window.innerWidth + 30) p.x = -30;
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
-        ctx.globalAlpha = clamp(p.life/260, 0, 1);
-
-        // draw tiny heart-ish diamond
-        ctx.beginPath();
-        ctx.moveTo(0, -p.r);
-        ctx.lineTo(p.r, 0);
-        ctx.lineTo(0, p.r);
-        ctx.lineTo(-p.r, 0);
-        ctx.closePath();
-        ctx.fillStyle = `hsla(${Math.floor(Math.random()*40)+330}, 85%, 60%, .9)`;
-        ctx.fill();
-
-        ctx.restore();
-      }
-
-      confetti = confetti.filter(p => p.life > 0 && p.y < window.innerHeight + 80);
-      rafId = requestAnimationFrame(tickConfetti);
-    }
-
-    // ========= "NO" RUNS, BUT CAN BE CLICKED 6 TIMES =========
+    // ========= NO movement =========
     let noClicks = 0;
-    let attempts = 0;
 
     function intersects(ax, ay, aw, ah, bx, by, bw, bh){
       return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
     }
 
     function getSafeBounds(){
-      const insetTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--padTop")) || 16;
-      const insetBot = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--padBot")) || 16;
       const safe = 12;
+      const padTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--padTop")) || 16;
+      const padBot = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--padBot")) || 16;
       return {
         left: safe,
         right: window.innerWidth - safe,
-        top: insetTop + safe,
-        bottom: window.innerHeight - insetBot - safe
+        top: padTop + safe,
+        bottom: window.innerHeight - padBot - safe
       };
     }
 
     function moveNoAvoidYes(){
-      attempts++;
-
       const bounds = getSafeBounds();
       const btn = no.getBoundingClientRect();
       const yesRect = yes.getBoundingClientRect();
 
-      const safeGap = 36; // avoid YES area + little aura
+      const safeGap = 36;
       const maxX = Math.max(1, bounds.right - bounds.left - btn.width);
       const maxY = Math.max(1, bounds.bottom - bounds.top - btn.height);
 
@@ -554,7 +403,7 @@
         x = bounds.left + Math.random() * maxX;
         y = bounds.top + Math.random() * maxY;
         tries++;
-        if(tries > 120) break;
+        if(tries > 140) break;
       } while(
         intersects(
           x, y, btn.width, btn.height,
@@ -568,71 +417,69 @@
       no.style.transform = "translate(0,0)";
     }
 
-    function achievementText(){
-      if(attempts === 5) return "Okej… widzę determinację 😅";
-      if(attempts === 10) return "Jesteś blisko legendy kliknięcia „NIE” 😂";
-      if(attempts === 15) return "To już sport wyczynowy 😈";
-      return "";
-    }
-
     // Ucieka przy najechaniu / dotknięciu
     no.addEventListener("mouseenter", moveNoAvoidYes);
-    no.addEventListener("touchstart", (e)=>{ e.preventDefault(); moveNoAvoidYes(); }, {passive:false});
+    no.addEventListener("touchstart", (e)=>{ e.preventDefault(); ensureAudio(); moveNoAvoidYes(); }, {passive:false});
 
-    // Kliknięcia liczymy — po 6 zapisuje odpowiedź i znika
-    no.addEventListener("click", async (e) => {
-      e.preventDefault();
-      noClicks++;
-
+    // Kliknięcia: licznik schodzący tylko na przycisku
+    function updateNoLabel(){
       const left = needed - noClicks;
+      if(left > 0) no.textContent = `NIE 😈 (${left})`;
+      else no.textContent = `NIE 😈`;
+    }
+    updateNoLabel();
+
+    no.addEventListener("click", (e) => {
+      e.preventDefault();
+      ensureAudio();
+      clickPop();
+
+      noClicks++;
+      const left = needed - noClicks;
+
       if(left > 0){
-        no.textContent = `NIE 😈 (${left})`;
+        updateNoLabel();
         moveNoAvoidYes();
-        const ach = achievementText();
-        result.textContent = `Prawie! Zostało złapać "NIE" jeszcze ${left} razy 😅` + (ach ? ` • ${ach}` : "");
-        popSound();
+        result.textContent = ""; // nie pokazujemy żadnych hintów o kliknięciach
       } else {
         const ans = "NIE 😈";
         setLocalAnswer(ans);
         result.textContent = `Zapisane: ${ans} ✅`;
-        no.style.display = "none"; // znika dopiero po 6 kliknięciach
-        popSound();
-        await openMessageApp(ans);
+        no.style.display = "none";
+        openMessageApp(ans);
         showOverlay(ans);
       }
     });
 
     // ========= YES =========
-    yes.addEventListener("click", async () => {
+    yes.addEventListener("click", () => {
+      ensureAudio();
+      clickPop();
       const ans = "TAK 💖";
       setLocalAnswer(ans);
       result.textContent = "YAY! 💘 Widzimy się na Walentynki 😄";
-      popSound();
-      startConfetti();
-      await openMessageApp(ans);
+      openMessageApp(ans);
       showOverlay(ans);
     });
 
     function showOverlay(ans){
-      yayTitle.textContent = ans === "TAK 💖" ? "YAY! 💘" : "Okej 😈";
-      yayText.textContent = ans === "TAK 💖"
+      overlayTitle.textContent = ans === "TAK 💖" ? "YAY! 💘" : "Okej 😈";
+      overlayText.textContent = ans === "TAK 💖"
         ? `To ustalone, ${name} — Walentynki są nasze 😄`
-        : `No dobra… ale i tak mi się podobasz 😅`;
+        : `Odpowiedź zapisana: ${ans}`;
       overlay.classList.add("on");
     }
 
-    sendAgain.addEventListener("click", async () => {
-      const savedNow = getLocalAnswer();
-      const ans = savedNow?.answer || "TAK 💖";
-      popSound();
-      await openMessageApp(ans);
+    sendAgain.addEventListener("click", () => {
+      ensureAudio();
+      clickPop();
+      const saved = getLocalAnswer();
+      openMessageApp(saved?.answer || "TAK 💖");
     });
     closeOverlay.addEventListener("click", () => overlay.classList.remove("on"));
 
-    // Start: przenieś NO w losowe miejsce od razu
+    // Start
     moveNoAvoidYes();
-
-    // Bonus: jeśli ktoś przewija/zmienia orientację — ustaw NO jeszcze raz
     window.addEventListener("orientationchange", () => setTimeout(moveNoAvoidYes, 300));
   </script>
 </body>
