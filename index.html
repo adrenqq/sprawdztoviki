@@ -6,22 +6,33 @@
   <title>Czy zostaniesz moją Walentynką? 💘</title>
 
   <style>
-    :root{ --shadow: 0 18px 55px rgba(0,0,0,.18); --radius: 22px; }
+    :root{
+      --shadow: 0 18px 55px rgba(0,0,0,.18);
+      --radius: 22px;
+      --glass: rgba(255, 210, 225, .86);
+      --glass2: rgba(255,255,255,.55);
+      --text: #121212;
+      --muted: rgba(0,0,0,.65);
+      --padTop: max(16px, env(safe-area-inset-top));
+      --padBot: max(16px, env(safe-area-inset-bottom));
+      --padLR: 14px;
+      --safe: 12px;
+    }
     *{ box-sizing:border-box; }
-
+    html, body{ height:100%; }
     body{
       margin:0;
       min-height:100svh;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: max(16px, env(safe-area-inset-top)) 14px max(16px, env(safe-area-inset-bottom));
+      padding: var(--padTop) var(--padLR) var(--padBot);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       text-align:center;
-      color:#111;
+      color:var(--text);
       background:
-        radial-gradient(1200px 800px at 20% 10%, #fff 0%, transparent 55%),
-        radial-gradient(1200px 800px at 80% 90%, #fff 0%, transparent 55%),
+        radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,.85) 0%, transparent 55%),
+        radial-gradient(1200px 800px at 80% 90%, rgba(255,255,255,.75) 0%, transparent 55%),
         linear-gradient(135deg, #ffd1dc, #ff9aa2 55%, #ff6f91);
       overflow:hidden;
     }
@@ -32,48 +43,93 @@
       pointer-events:none;
       opacity:.55;
       z-index:0;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,.14));
     }
     .hearts span{
       position:absolute;
       transform: translateY(110svh);
       animation: floatUp linear infinite;
       will-change: transform, opacity;
+      user-select:none;
     }
     @keyframes floatUp{
       0%{ transform: translateY(110svh) translateX(0) rotate(0deg); opacity:0; }
       10%{ opacity:1; }
       90%{ opacity:1; }
-      100%{ transform: translateY(-20svh) translateX(80px) rotate(360deg); opacity:0; }
+      100%{ transform: translateY(-25svh) translateX(90px) rotate(360deg); opacity:0; }
+    }
+
+    /* subtle glow blobs */
+    .blob{
+      position:fixed;
+      width: 520px; height: 520px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.55), transparent 60%);
+      filter: blur(10px);
+      opacity:.55;
+      z-index:0;
+      pointer-events:none;
+      animation: blobMove 10s ease-in-out infinite alternate;
+    }
+    .blob.b1{ left:-180px; top:-220px; }
+    .blob.b2{ right:-220px; bottom:-240px; animation-duration: 12s; }
+    @keyframes blobMove{
+      from{ transform: translate(0,0) scale(1); }
+      to{ transform: translate(60px, 30px) scale(1.08); }
     }
 
     .card{
-      width: min(620px, 90vw);
-      background: rgba(255, 210, 225, .88);
+      width: min(680px, 92vw);
+      background: var(--glass);
       border: 1px solid rgba(255,255,255,.55);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(14px);
       padding: clamp(14px, 3.2vw, 22px);
       position:relative;
       z-index:1;
+      overflow:hidden;
+    }
+    .card:before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: linear-gradient(135deg, rgba(255,255,255,.55), transparent 45%, rgba(255,255,255,.35));
+      opacity:.7;
+      pointer-events:none;
+      border-radius: inherit;
     }
 
-    h1{ margin: 4px 0 8px; font-size: clamp(22px, 5.6vw, 32px); line-height:1.15; }
-    .sub{ margin: 0 0 12px; font-size: clamp(13px, 3.5vw, 16px); opacity:.9; }
+    h1{
+      margin: 6px 0 8px;
+      font-size: clamp(22px, 5.6vw, 34px);
+      line-height:1.15;
+      position:relative;
+      z-index:1;
+    }
+    .sub{
+      margin: 0 0 12px;
+      font-size: clamp(13px, 3.5vw, 16px);
+      opacity:.92;
+      position:relative;
+      z-index:1;
+    }
 
     .photos{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
       gap:10px;
       margin: 12px 0 14px;
+      position:relative;
+      z-index:1;
     }
     .photos img{
       width:100%;
       aspect-ratio: 4 / 3;
       object-fit: cover;
-      border-radius: 12px;
-      box-shadow: 0 10px 20px rgba(0,0,0,.14);
+      border-radius: 14px;
+      box-shadow: 0 12px 24px rgba(0,0,0,.16);
       background: rgba(255,255,255,.25);
+      border: 1px solid rgba(255,255,255,.45);
     }
     @media (max-width: 520px){
       .photos{ grid-template-columns: repeat(2, 1fr); }
@@ -95,27 +151,37 @@
       border-radius: 999px;
       padding: 14px 22px;
       font-size: clamp(15px, 4vw, 17px);
-      font-weight: 800;
+      font-weight: 900;
       cursor:pointer;
-      box-shadow: 0 12px 22px rgba(0,0,0,.18);
+      box-shadow: 0 14px 26px rgba(0,0,0,.18);
       user-select:none;
       -webkit-tap-highlight-color: transparent;
       min-width: 136px;
       min-height: 46px;
+      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+      position:relative;
+      z-index:1;
     }
+    button:hover{ filter: brightness(1.02); }
     button:active{ transform: scale(.98); }
 
-    #yes{ background:#22c55e; color:white; }
+    #yes{
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color:white;
+    }
 
-    /* NO lives outside card and runs around */
+    /* NO lives outside and runs around (smooth) */
     #no{
-      background:#ef4444;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
       color:white;
       position:fixed;
       z-index: 9999;
       left: 70%;
       top: 60%;
       transform: translate(-50%, -50%);
+      transition: left .22s ease, top .22s ease, transform .22s ease;
+      will-change: left, top, transform;
+      touch-action: none;
     }
 
     #result{
@@ -123,18 +189,90 @@
       font-size: clamp(15px, 4vw, 18px);
       font-weight: 900;
       min-height: 26px;
+      position:relative;
+      z-index:1;
     }
-    .hint{ margin-top: 10px; font-size: clamp(12px, 3.2vw, 13.5px); opacity:.85; }
-    .tiny{ margin-top: 8px; font-size: 12px; opacity:.65; }
+    .hint{
+      margin-top: 10px;
+      font-size: clamp(12px, 3.2vw, 13.5px);
+      opacity:.9;
+      position:relative;
+      z-index:1;
+    }
+    .tiny{
+      margin-top: 8px;
+      font-size: 12px;
+      opacity:.7;
+      position:relative;
+      z-index:1;
+    }
+
+    /* second screen */
+    .overlay{
+      position:absolute;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      z-index:5;
+      background: radial-gradient(800px 500px at 30% 20%, rgba(255,255,255,.7), rgba(255,255,255,.25) 55%, rgba(255,255,255,.05));
+      backdrop-filter: blur(12px);
+    }
+    .overlay.on{ display:flex; }
+    .panel{
+      width:min(560px, 92%);
+      background: rgba(255,255,255,.65);
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: 20px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.18);
+      padding: 16px 16px 14px;
+    }
+    .panel h2{
+      margin: 4px 0 8px;
+      font-size: clamp(20px, 5vw, 28px);
+    }
+    .panel p{
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-weight: 650;
+    }
+    .panel .row{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .panel .ghost{
+      background: rgba(255,255,255,.65);
+      border: 1px solid rgba(0,0,0,.07);
+      color:#111;
+      box-shadow: 0 12px 22px rgba(0,0,0,.12);
+    }
+
+    /* confetti canvas */
+    #confetti{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index: 4;
+      display:none;
+    }
+    #confetti.on{ display:block; }
   </style>
 </head>
 
 <body>
-  <div class="hearts" id="hearts"></div>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
 
-  <div class="card">
-    <h1>💘 Czy zostaniesz moją Walentynką Wiktoria? 💘</h1>
-    <p class="sub">Obiecuję: uśmiech, coś pysznego i dużo czułości (w pakiecie) 🥰</p>
+  <div class="hearts" id="hearts"></div>
+  <canvas id="confetti"></canvas>
+
+  <div class="card" id="card">
+    <h1 id="title">💘 Czy zostaniesz moją Walentynką Wiktoria? 💘</h1>
+    <p class="sub" id="subtitle">Obiecuję: uśmiech, coś pysznego i dużo czułości (w pakiecie) 🥰</p>
 
     <div class="photos">
       <img src="images/1.jpg" alt="photo 1">
@@ -146,10 +284,25 @@
       <button id="yes">TAK 💖</button>
     </div>
 
-    <div class="hint">Kliknij „TAK”, żeby odblokować szczęście ✨</div>
-    <div class="tiny">PS. „NIE” da się kliknąć… ale dopiero po 6 trafieniach 😅</div>
+    <div class="hint" id="hint">Kliknij „TAK”, żeby odblokować szczęście ✨</div>
+    <div class="tiny" id="tiny">PS. „NIE” da się kliknąć… ale dopiero po 6 trafieniach 😅</div>
 
     <div id="result"></div>
+
+    <!-- second screen -->
+    <div class="overlay" id="overlay">
+      <div class="panel">
+        <h2 id="yayTitle">YAY! 💘</h2>
+        <p id="yayText">Widzimy się na Walentynki 😄</p>
+        <div class="row">
+          <button id="sendAgain">Wyślij jeszcze raz 📩</button>
+          <button class="ghost" id="closeOverlay">Zamknij ✨</button>
+        </div>
+        <div class="tiny" style="margin-top:10px; opacity:.75;">
+          Jeśli telefon nie otworzy SMS automatycznie, skopiuję tekst do schowka.
+        </div>
+      </div>
+    </div>
   </div>
 
   <button id="no">NIE 😈</button>
@@ -157,17 +310,54 @@
   <script>
     // ========= SETTINGS =========
     const MY_PHONE_E164 = "+48690980775";   // iMessage/SMS
-    const KEY = "valentine_answer_v4";
+    const KEY = "valentine_answer_v5";
+    const needed = 6;
+
+    // ========= UTIL =========
+    const $ = (id) => document.getElementById(id);
+
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+    function getNameFromUrl(){
+      const p = new URLSearchParams(location.search);
+      const raw = (p.get("name") || "").trim();
+      const safe = raw.replace(/[<>]/g, "").slice(0, 24);
+      return safe || "Wiktoria";
+    }
+
+    function nowStamp(){
+      return new Date().toLocaleString("pl-PL");
+    }
+
+    // ========= SOUND (no files) =========
+    function popSound(){
+      try{
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "triangle";
+        o.frequency.setValueAtTime(520, ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.12);
+        g.gain.setValueAtTime(0.0001, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.28, ctx.currentTime + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
+        o.connect(g); g.connect(ctx.destination);
+        o.start();
+        o.stop(ctx.currentTime + 0.16);
+        o.onended = () => ctx.close();
+      }catch(e){}
+    }
 
     // ========= HEARTS =========
-    const heartsBox = document.getElementById("hearts");
-    const heartChars = ["💗","💖","💘","💕","💞","❤️‍🔥"];
+    const heartsBox = $("hearts");
+    const heartChars = ["💗","💖","💘","💕","💞","❤️‍🔥","💝"];
 
     function spawnHeart(){
       const s = document.createElement("span");
       s.textContent = heartChars[Math.floor(Math.random()*heartChars.length)];
       const left = Math.random()*100;
-      const size = 14 + Math.random()*18;
+      const size = 14 + Math.random()*20;
       const dur = 6 + Math.random()*7;
       const delay = Math.random()*2;
 
@@ -180,61 +370,196 @@
       setTimeout(() => s.remove(), (dur + delay) * 1000 + 250);
     }
     for(let i=0;i<18;i++) spawnHeart();
-    setInterval(spawnHeart, 450);
+    setInterval(spawnHeart, 420);
 
     // ========= ELEMENTS =========
-    const yes = document.getElementById("yes");
-    const no  = document.getElementById("no");
-    const result = document.getElementById("result");
+    const name = getNameFromUrl();
+    const title = $("title");
+    const subtitle = $("subtitle");
+    const hint = $("hint");
+    const tiny = $("tiny");
+    const yes = $("yes");
+    const no  = $("no");
+    const result = $("result");
+    const overlay = $("overlay");
+    const yayTitle = $("yayTitle");
+    const yayText = $("yayText");
+    const sendAgain = $("sendAgain");
+    const closeOverlay = $("closeOverlay");
+
+    title.textContent = `💘 Czy zostaniesz moją Walentynką ${name}? 💘`;
+    subtitle.textContent = `Obiecuję: uśmiech, coś pysznego i dużo czułości (w pakiecie) 🥰`;
 
     // ========= STORAGE =========
     function setLocalAnswer(ans){
-      localStorage.setItem(KEY, JSON.stringify({ answer: ans, time: new Date().toISOString() }));
+      localStorage.setItem(KEY, JSON.stringify({
+        answer: ans,
+        time: new Date().toISOString(),
+        name
+      }));
     }
     function getLocalAnswer(){
       try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; }
     }
+
     const saved = getLocalAnswer();
     if(saved?.answer){
       result.textContent = `Zapisane na tym telefonie: ${saved.answer} ✅`;
     }
 
     // ========= SMS / iMessage =========
-    function openMessageApp(ans){
-      const stamp = new Date().toLocaleString("pl-PL");
-      const text = `Odpowiedź: ${ans} 💘 (czas: ${stamp})`;
-      // iOS: sms:+48...&body=...
-      window.location.href = `sms:${MY_PHONE_E164}&body=${encodeURIComponent(text)}`;
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        return false;
+      }
     }
 
-    // ========= NO RUNS, BUT CAN BE CLICKED 6 TIMES =========
+    async function openMessageApp(ans){
+      const text = `Odpowiedź: ${ans} 💘 (czas: ${nowStamp()})`;
+      // iOS: sms:+48...&body=...
+      const url = `sms:${MY_PHONE_E164}&body=${encodeURIComponent(text)}`;
+
+      // Try open SMS app
+      window.location.href = url;
+
+      // Fallback: copy after a moment (if system blocks)
+      setTimeout(async () => {
+        const ok = await copyToClipboard(text);
+        if(ok){
+          result.textContent = "Tekst SMS skopiowany do schowka ✅ (jeśli SMS się nie otworzył)";
+        }
+      }, 700);
+
+      return text;
+    }
+
+    // ========= CONFETTI =========
+    const canvas = $("confetti");
+    const ctx = canvas.getContext("2d");
+    let confettiOn = false;
+    let confetti = [];
+    let rafId = null;
+
+    function resizeCanvas(){
+      canvas.width = window.innerWidth * devicePixelRatio;
+      canvas.height = window.innerHeight * devicePixelRatio;
+      ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    }
+    window.addEventListener("resize", resizeCanvas, {passive:true});
+    resizeCanvas();
+
+    function startConfetti(){
+      canvas.classList.add("on");
+      confettiOn = true;
+      confetti = [];
+      const count = Math.min(220, Math.floor(window.innerWidth * 0.22));
+      for(let i=0;i<count;i++){
+        confetti.push({
+          x: Math.random()*window.innerWidth,
+          y: -20 - Math.random()*window.innerHeight*0.4,
+          vx: -1.2 + Math.random()*2.4,
+          vy: 2.6 + Math.random()*4.2,
+          r: 2 + Math.random()*4,
+          rot: Math.random()*Math.PI*2,
+          vr: -0.12 + Math.random()*0.24,
+          life: 220 + Math.random()*140,
+        });
+      }
+      tickConfetti();
+      setTimeout(stopConfetti, 2600);
+    }
+
+    function stopConfetti(){
+      confettiOn = false;
+      canvas.classList.remove("on");
+      if(rafId) cancelAnimationFrame(rafId);
+      rafId = null;
+      confetti = [];
+      ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
+    }
+
+    function tickConfetti(){
+      if(!confettiOn) return;
+      ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
+
+      for(const p of confetti){
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        p.vy += 0.02; // gravity
+        p.life -= 1;
+
+        // simple wrap
+        if(p.x < -30) p.x = window.innerWidth + 30;
+        if(p.x > window.innerWidth + 30) p.x = -30;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.globalAlpha = clamp(p.life/260, 0, 1);
+
+        // draw tiny heart-ish diamond
+        ctx.beginPath();
+        ctx.moveTo(0, -p.r);
+        ctx.lineTo(p.r, 0);
+        ctx.lineTo(0, p.r);
+        ctx.lineTo(-p.r, 0);
+        ctx.closePath();
+        ctx.fillStyle = `hsla(${Math.floor(Math.random()*40)+330}, 85%, 60%, .9)`;
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      confetti = confetti.filter(p => p.life > 0 && p.y < window.innerHeight + 80);
+      rafId = requestAnimationFrame(tickConfetti);
+    }
+
+    // ========= "NO" RUNS, BUT CAN BE CLICKED 6 TIMES =========
     let noClicks = 0;
-    const needed = 6;
+    let attempts = 0;
 
     function intersects(ax, ay, aw, ah, bx, by, bw, bh){
       return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
     }
 
-    function moveNoAvoidYes(){
-      const pad = 10;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
+    function getSafeBounds(){
+      const insetTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--padTop")) || 16;
+      const insetBot = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--padBot")) || 16;
+      const safe = 12;
+      return {
+        left: safe,
+        right: window.innerWidth - safe,
+        top: insetTop + safe,
+        bottom: window.innerHeight - insetBot - safe
+      };
+    }
 
+    function moveNoAvoidYes(){
+      attempts++;
+
+      const bounds = getSafeBounds();
       const btn = no.getBoundingClientRect();
       const yesRect = yes.getBoundingClientRect();
-      const safe = 30;
+
+      const safeGap = 36; // avoid YES area + little aura
+      const maxX = Math.max(1, bounds.right - bounds.left - btn.width);
+      const maxY = Math.max(1, bounds.bottom - bounds.top - btn.height);
 
       let x, y, tries = 0;
       do{
-        x = pad + Math.random() * Math.max(1, vw - btn.width - pad*2);
-        y = pad + Math.random() * Math.max(1, vh - btn.height - pad*2);
+        x = bounds.left + Math.random() * maxX;
+        y = bounds.top + Math.random() * maxY;
         tries++;
-        if(tries > 90) break;
+        if(tries > 120) break;
       } while(
         intersects(
           x, y, btn.width, btn.height,
-          yesRect.left - safe, yesRect.top - safe,
-          yesRect.width + safe*2, yesRect.height + safe*2
+          yesRect.left - safeGap, yesRect.top - safeGap,
+          yesRect.width + safeGap*2, yesRect.height + safeGap*2
         )
       );
 
@@ -243,12 +568,19 @@
       no.style.transform = "translate(0,0)";
     }
 
+    function achievementText(){
+      if(attempts === 5) return "Okej… widzę determinację 😅";
+      if(attempts === 10) return "Jesteś blisko legendy kliknięcia „NIE” 😂";
+      if(attempts === 15) return "To już sport wyczynowy 😈";
+      return "";
+    }
+
     // Ucieka przy najechaniu / dotknięciu
     no.addEventListener("mouseenter", moveNoAvoidYes);
     no.addEventListener("touchstart", (e)=>{ e.preventDefault(); moveNoAvoidYes(); }, {passive:false});
 
     // Kliknięcia liczymy — po 6 zapisuje odpowiedź i znika
-    no.addEventListener("click", (e) => {
+    no.addEventListener("click", async (e) => {
       e.preventDefault();
       noClicks++;
 
@@ -256,28 +588,53 @@
       if(left > 0){
         no.textContent = `NIE 😈 (${left})`;
         moveNoAvoidYes();
-        // małe info na karcie
-        result.textContent = `Prawie! Zostało złapać "NIE" jeszcze ${left} razy 😅`;
+        const ach = achievementText();
+        result.textContent = `Prawie! Zostało złapać "NIE" jeszcze ${left} razy 😅` + (ach ? ` • ${ach}` : "");
+        popSound();
       } else {
         const ans = "NIE 😈";
         setLocalAnswer(ans);
         result.textContent = `Zapisane: ${ans} ✅`;
         no.style.display = "none"; // znika dopiero po 6 kliknięciach
-        // opcjonalnie: też otwórz wiadomość do Ciebie:
-        openMessageApp(ans);
+        popSound();
+        await openMessageApp(ans);
+        showOverlay(ans);
       }
     });
 
     // ========= YES =========
-    yes.addEventListener("click", () => {
+    yes.addEventListener("click", async () => {
       const ans = "TAK 💖";
       setLocalAnswer(ans);
       result.textContent = "YAY! 💘 Widzimy się na Walentynki 😄";
-      openMessageApp(ans);
+      popSound();
+      startConfetti();
+      await openMessageApp(ans);
+      showOverlay(ans);
     });
+
+    function showOverlay(ans){
+      yayTitle.textContent = ans === "TAK 💖" ? "YAY! 💘" : "Okej 😈";
+      yayText.textContent = ans === "TAK 💖"
+        ? `To ustalone, ${name} — Walentynki są nasze 😄`
+        : `No dobra… ale i tak mi się podobasz 😅`;
+      overlay.classList.add("on");
+    }
+
+    sendAgain.addEventListener("click", async () => {
+      const savedNow = getLocalAnswer();
+      const ans = savedNow?.answer || "TAK 💖";
+      popSound();
+      await openMessageApp(ans);
+    });
+    closeOverlay.addEventListener("click", () => overlay.classList.remove("on"));
 
     // Start: przenieś NO w losowe miejsce od razu
     moveNoAvoidYes();
+
+    // Bonus: jeśli ktoś przewija/zmienia orientację — ustaw NO jeszcze raz
+    window.addEventListener("orientationchange", () => setTimeout(moveNoAvoidYes, 300));
   </script>
 </body>
 </html>
+
