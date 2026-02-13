@@ -171,7 +171,6 @@
       100% { transform: translateX(0) translateY(0) rotate(-0.12deg); }
     }
 
-    /* extra flair on tap */
     .photo:active img{ transform: scale(1.04); }
 
     /* swap animation class */
@@ -545,13 +544,9 @@
     addEventListener("orientationchange", () => setTimeout(moveNoAvoidYes, 250));
 
     // ====== PHOTO SWAP (4 -> 3 -> 2 -> 1) ======
-    // U CIEBIE PLIKI W FOLDERZE images SĄ TAKIE:
-    // 1.jpg.JPEG, 1_2.jpg.JPEG, 1_3.jpg.JPEG
-    // 2.jpg.JPEG, 2_2.jpg.JPEG, 2_3.jpg.JPEG
-    // 3.jpg.JPEG, 3_2.jpg.JPEG, 3_3.jpg.JPEG
-    // 4.jpg.JPEG, 4_2.jpg.JPEG
+    // Dopasowane 1:1 do Twoich nazw plików:
     const photoSets = {
-      1: ["images/1.jpg.JPEG", "images/1_2.jpg.JPEG", "images/1_3.jpg.JPEG"],
+      1: ["images/1.jpg.JPEG", "images/1_2.jpeg.JPEG", "images/1_3.jpg.JPEG"],
       2: ["images/2.jpg.JPEG", "images/2_2.jpg.JPEG", "images/2_3.jpg.JPEG"],
       3: ["images/3.jpg.JPEG", "images/3_2.jpg.JPEG", "images/3_3.jpg.JPEG"],
       4: ["images/4.jpg.JPEG", "images/4_2.jpg.JPEG"]
@@ -597,7 +592,7 @@
       });
     }
 
-    // kliknięcie w dowolne zdjęcie uruchamia sekwencję 4->3->2->1
+    // klik w dowolne zdjęcie uruchamia sekwencję 4->3->2->1
     document.getElementById("photos").addEventListener("click", (e) => {
       const tile = e.target.closest(".photo");
       if(!tile) return;
