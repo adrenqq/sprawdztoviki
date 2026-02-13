@@ -35,12 +35,12 @@
       overflow:hidden;
     }
 
-    /* floating hearts - MUST be visible above overlay too */
+    /* floating hearts - visible above overlay too */
     .hearts{
       position:fixed; inset:0;
       pointer-events:none;
       opacity:.62;
-      z-index: 99998; /* above overlay */
+      z-index: 99998;
       filter: drop-shadow(0 10px 20px rgba(0,0,0,.14));
     }
     .hearts span{
@@ -160,17 +160,18 @@
       z-index:1;
     }
     button:active{ transform: scale(.98); }
+
     #yes{
       background: linear-gradient(135deg, #22c55e, #16a34a);
       color:white;
     }
 
-    /* NO runs around (smooth) */
+    /* NO runs around */
     #no{
       background: linear-gradient(135deg, #ef4444, #dc2626);
       color:white;
       position:fixed;
-      z-index: 99999; /* above everything clickable */
+      z-index: 99999;
       left: 70%;
       top: 60%;
       transform: translate(-50%, -50%);
@@ -188,7 +189,7 @@
       z-index:1;
     }
 
-    /* overlay (second screen) */
+    /* overlay */
     .overlay{
       position:absolute;
       inset:0;
@@ -273,12 +274,11 @@
   <script>
     // ========= SETTINGS =========
     const MY_PHONE_E164 = "+48690980775";
-    const KEY = "valentine_answer_v6";
+    const KEY = "valentine_answer_v7";
     const needed = 5;
 
     // ========= UTIL =========
     const $ = (id) => document.getElementById(id);
-    function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
 
     function getNameFromUrl(){
       const p = new URLSearchParams(location.search);
@@ -289,7 +289,6 @@
     function nowStamp(){ return new Date().toLocaleString("pl-PL"); }
 
     // ========= MOBILE AUDIO FIX =========
-    // One AudioContext; resumed on every user gesture if needed.
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
@@ -366,12 +365,12 @@
     // ========= SMS / iMessage =========
     function openMessageApp(ans){
       const text = `Odpowiedź: ${ans} 💘 (czas: ${nowStamp()})`;
-      // iOS: sms:+48...&body=...
       window.location.href = `sms:${MY_PHONE_E164}&body=${encodeURIComponent(text)}`;
     }
 
-    // ========= NO movement =========
+    // ========= NO movement + countdown-on-click =========
     let noClicks = 0;
+    no.textContent = "NIE 😈"; // start: no counter
 
     function intersects(ax, ay, aw, ah, bx, by, bw, bh){
       return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
@@ -417,18 +416,11 @@
       no.style.transform = "translate(0,0)";
     }
 
-    // Ucieka przy najechaniu / dotknięciu
+    // ucieka na hover / dotyk
     no.addEventListener("mouseenter", moveNoAvoidYes);
     no.addEventListener("touchstart", (e)=>{ e.preventDefault(); ensureAudio(); moveNoAvoidYes(); }, {passive:false});
 
-    // Kliknięcia: licznik schodzący tylko na przycisku
-    function updateNoLabel(){
-      const left = needed - noClicks;
-      if(left > 0) no.textContent = `NIE 😈 (${left})`;
-      else no.textContent = `NIE 😈`;
-    }
-    updateNoLabel();
-
+    // klik: pokaz licznik ile zostało; na ostatnim SMS
     no.addEventListener("click", (e) => {
       e.preventDefault();
       ensureAudio();
@@ -438,13 +430,12 @@
       const left = needed - noClicks;
 
       if(left > 0){
-        updateNoLabel();
+        no.textContent = `NIE 😈 (${left})`;
         moveNoAvoidYes();
-        result.textContent = ""; // nie pokazujemy żadnych hintów o kliknięciach
+        result.textContent = "";
       } else {
         const ans = "NIE 😈";
         setLocalAnswer(ans);
-        result.textContent = `Zapisane: ${ans} ✅`;
         no.style.display = "none";
         openMessageApp(ans);
         showOverlay(ans);
@@ -476,6 +467,7 @@
       const saved = getLocalAnswer();
       openMessageApp(saved?.answer || "TAK 💖");
     });
+
     closeOverlay.addEventListener("click", () => overlay.classList.remove("on"));
 
     // Start
@@ -484,4 +476,3 @@
   </script>
 </body>
 </html>
-
