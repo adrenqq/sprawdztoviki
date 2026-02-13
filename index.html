@@ -109,17 +109,16 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* ===== MAIN CARD (teraz bez “białych kwadratów”) ===== */
+  /* ===== MAIN CARD ===== */
   .card{
     width:min(460px, 92vw);
-    background: transparent;            /* ✅ bez białego tła */
+    background: transparent;
     border: 0;
     box-shadow: none;
     position:relative;
     z-index:1;
   }
 
-  /* delikatne tło tylko pod głównymi napisami */
   .titleWrap{
     display:inline-block;
     padding: 12px 14px;
@@ -133,15 +132,8 @@
 
   h1{ margin:4px 0 8px; font-size: clamp(22px, 5.6vw, 30px); line-height:1.15; }
   .sub{ margin:0; font-size: 14px; font-weight: 700; opacity:.92; }
+  .note{ margin-top: 10px; font-size:14px; font-weight:800; opacity:.92; }
 
-  .note{
-    margin-top: 10px;
-    font-size:14px;
-    font-weight:800;
-    opacity:.92;
-  }
-
-  /* photos grid */
   .photos{
     display:grid;
     grid-template-columns:repeat(2,1fr);
@@ -157,7 +149,7 @@
     transform: translateZ(0);
     will-change: transform;
     box-shadow: 0 14px 28px rgba(0,0,0,.18);
-    background: rgba(255,255,255,.08);  /* ✅ delikatny “mat” zamiast bieli */
+    background: rgba(255,255,255,.08);
     border: 1px solid rgba(255,255,255,.14);
   }
   .photo:nth-child(2){ animation-delay:.7s; animation-duration: 7.2s; }
@@ -172,11 +164,18 @@
   .photo img{
     width:100%;
     aspect-ratio:4/3;
-    object-fit: cover; /* ✅ estetycznie, bez “kwadratu w środku” */
     display:block;
     user-select:none;
     -webkit-user-drag:none;
-    transform: scale(1.01);
+
+    /* ✅ pełne zdjęcia (bez ucinania) */
+    object-fit: contain;
+
+    /* ✅ zamiast białego kwadratu: delikatna “różowa poświata” pod zdjęciem */
+    background:
+      radial-gradient(420px 260px at 50% 45%, rgba(255,255,255,.10), rgba(255,255,255,.02));
+
+    transform: scale(1.0);
     opacity:1;
     transition: opacity 220ms ease, transform 220ms ease;
     will-change: opacity, transform;
@@ -184,10 +183,9 @@
 
   .photo.swap img{
     opacity:0;
-    transform: scale(1.03);
+    transform: scale(1.02);
   }
 
-  /* buttons */
   #arena{
     display:flex;
     gap:12px;
@@ -227,7 +225,6 @@
 
   #result{ margin-top:10px; font-weight:900; min-height:22px; }
 
-  /* music button */
   #musicBtn{
     position:fixed;
     right: 12px;
@@ -242,7 +239,6 @@
     font-weight: 900;
   }
 
-  /* sparkles */
   .spark{
     position:fixed;
     z-index: 100000;
@@ -258,7 +254,7 @@
     100% { transform: translate(-50%, -70px) scale(1.25) rotate(16deg); opacity:0; }
   }
 
-  /* ===== SUCCESS OVERLAY ===== */
+  /* SUCCESS OVERLAY */
   #successOverlay{
     position:fixed;
     inset:0;
@@ -355,6 +351,10 @@
           <br><br>
           Jeżeli zapyta Cię o pozwolenie do przejścia w imassage- kliknij . Spokojnie to bezpieczna strona, sam ją pisałem.
           <br><br>
+          <!-- ✅ DOPISEK -->
+          W prawym dolnym rogu masz przycisk muzyki (jeżeli muzyka sama nie zacznie grać) kliknij go. Włącz dźwięk i dzwonek, żeby działał dźwięk z poziomu telefonu.
+          <br><br>
+
           I hope u enjoy 😇🥰❤️
         </span>
       </div>
@@ -424,7 +424,6 @@
 
   const $ = (id) => document.getElementById(id);
 
-  // ===== name param =====
   function getNameFromUrl(){
     const p = new URLSearchParams(location.search);
     const raw = (p.get("name") || "").trim();
@@ -433,7 +432,7 @@
   }
   $("title").textContent = `💘 Czy zostaniesz moją Walentynką ${getNameFromUrl()}? 💘`;
 
-  // ===== preload in JS (warm cache) =====
+  // warm cache
   const warmImages = [
     "images/1.jpg.JPEG","images/1_2.jpeg.JPEG","images/1_3.jpg.JPEG",
     "images/2.jpg.JPEG","images/2_2.jpg.JPEG","images/2_3.jpg.JPEG",
@@ -443,7 +442,7 @@
   ];
   warmImages.forEach(src => { const im = new Image(); im.decoding="async"; im.src = src; });
 
-  // ===== sparkles =====
+  // sparkles
   function sparkleAt(x, y){
     const chars = ["✨","💖","💘","🌟","💞"];
     const s = document.createElement("div");
@@ -456,7 +455,7 @@
     setTimeout(()=>s.remove(), 700);
   }
 
-  // ===== pop sound =====
+  // pop sound
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   let audioCtx = null;
   function ensureAudio(){
@@ -482,7 +481,7 @@
     o.stop(ctx.currentTime + 0.09);
   }
 
-  // ===== music =====
+  // music
   const bgm = $("bgm");
   const musicBtn = $("musicBtn");
   let musicOn = false;
@@ -510,7 +509,7 @@
     if(!musicOn) startMusic().catch(()=>{});
   }
 
-  // ===== background hearts =====
+  // background hearts
   const heartsBox = $("hearts");
   const heartChars = ["💗","💖","💘","💕","💞","❤️‍🔥","💝"];
   function spawnHeart(){
@@ -530,7 +529,7 @@
   for(let i=0;i<18;i++) spawnHeart();
   setInterval(spawnHeart, 420);
 
-  // ===== sms =====
+  // sms
   function isIOS(){
     return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   }
@@ -540,7 +539,7 @@
     location.href = `sms:${MY_PHONE_E164}${sep}body=${body}`;
   }
 
-  // ===== photo swap config =====
+  // photo swap config
   const photoSets = {
     1: ["images/1.jpg.JPEG", "images/1_2.jpeg.JPEG", "images/1_3.jpg.JPEG"],
     2: ["images/2.jpg.JPEG", "images/2_2.jpg.JPEG", "images/2_3.jpg.JPEG"],
@@ -584,10 +583,9 @@
     swapOne(slot);
   }
 
-  // ===== NO / YES logic =====
+  // NO / YES logic
   const yes = $("yes");
   const no  = $("no");
-  const result = $("result");
 
   let noClicks = 0;
   let yesClicks = 0;
@@ -644,12 +642,11 @@
     fn();
   }
 
-  // ===== SUCCESS overlay fireworks =====
+  // overlay fireworks
   const overlay = $("successOverlay");
   const bigHearts = $("bigHearts");
   const fwCanvas = $("fw");
   const successImg = $("successImg");
-
   let fwCtx, fwW, fwH, particles = [], fwRAF = null, fwEndAt = 0;
 
   function resizeFW(){
@@ -723,8 +720,6 @@
   function showSuccessThenSMS(){
     overlay.classList.add("show");
     resizeFW();
-
-    // image already warmed, but set again
     successImg.src = "images/5_2.jpg.JPEG";
 
     let heartsInt = setInterval(spawnBigHeart, 120);
@@ -735,10 +730,7 @@
     burst(0.65*fwW, 0.30*fwH);
     fwLoop();
 
-    // ✅ 4 sekundy dopiero SMS
-    setTimeout(() => {
-      openMessageAppText(YES_SMS_TEXT);
-    }, 4000);
+    setTimeout(() => openMessageAppText(YES_SMS_TEXT), 4000);
   }
 
   function onNoClicked(e){
@@ -766,7 +758,6 @@
     fireOnce(() => {
       const x = (e.touches?.[0]?.clientX) ?? e.clientX ?? (innerWidth/2);
       const y = (e.touches?.[0]?.clientY) ?? e.clientY ?? (innerHeight/2);
-
       for(let i=0;i<3;i++){
         setTimeout(()=>sparkleAt(x + (Math.random()*60-30), y + (Math.random()*40-20)), i*50);
       }
@@ -788,7 +779,6 @@
     });
   }
 
-  // bind events (iPhone safe)
   no.addEventListener("pointerdown", (e)=>{ e.preventDefault(); e.stopPropagation(); onNoClicked(e); }, {passive:false});
   no.addEventListener("touchend",   (e)=>{ e.preventDefault(); e.stopPropagation(); onNoClicked(e); }, {passive:false});
   no.addEventListener("click",      (e)=>{ e.preventDefault(); e.stopPropagation(); onNoClicked(e); });
@@ -805,14 +795,12 @@
     if(overlay.classList.contains("show")) setTimeout(resizeFW, 250);
   });
 
-  // ===== start screen behavior =====
-  const startBtn = $("startBtn");
-  startBtn.addEventListener("click", () => {
+  // start screen
+  $("startBtn").addEventListener("click", () => {
     $("startScreen").style.display = "none";
     $("mainCard").style.display = "block";
-    // ustaw startową pozycję NIE dopiero jak pokażemy main
     moveNoAvoidYes();
-    // spróbuj wystartować muzykę (czasem zadziała, czasem dopiero po kliknięciu TAK/NIE)
+    setYesLabel();
     startMusic().catch(()=>{});
   });
 </script>
